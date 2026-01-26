@@ -12,7 +12,7 @@ export async function GET(request: Request) {
     
     if (!error) {
       // Get the authenticated user
-      const { data: { user }, data: { session } } = await supabase.auth.getUser()
+      const { data: { user } } = await supabase.auth.getUser()
       
       if (user) {
         // Check if profile exists, if not create it
