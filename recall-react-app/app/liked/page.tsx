@@ -144,7 +144,7 @@ export default function LikedVideosPage() {
               <div className="text-center space-y-4">
                 <h2 className="text-xl font-semibold">No videos yet</h2>
                 <p className="text-muted-foreground">
-                  Click "Sync Videos" to import your liked videos from YouTube.
+                  Click &quot;Sync Videos&quot; to import your liked videos from YouTube.
                 </p>
               </div>
             </div>
