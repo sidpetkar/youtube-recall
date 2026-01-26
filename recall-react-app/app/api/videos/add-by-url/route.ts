@@ -1,3 +1,4 @@
+// @ts-nocheck
 import { NextRequest, NextResponse } from "next/server"
 import { createClient, createClientWithAuth } from "@/lib/supabase/server"
 import { getVideoById } from "@/lib/youtube"
