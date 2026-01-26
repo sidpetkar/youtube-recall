@@ -1,0 +1,212 @@
+/* Floating Button Styles */
+.recall-floating-button {
+  position: fixed;
+  bottom: 100px;
+  right: 20px;
+  z-index: 9999;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.recall-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: #3b82f6;
+  color: white;
+  border: none;
+  border-radius: 24px;
+  padding: 12px 20px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+  transition: all 0.2s;
+}
+
+.recall-btn:hover {
+  background: #2563eb;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 16px rgba(59, 130, 246, 0.5);
+}
+
+.recall-btn:active {
+  transform: translateY(0);
+}
+
+.recall-btn svg {
+  flex-shrink: 0;
+}
+
+/* Inline Button Styles (YouTube action bar) */
+.recall-inline-button {
+  margin-left: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+}
+
+.recall-inline-button .recall-inline-icon {
+  display: inline-flex;
+}
+
+.recall-inline-button .recall-inline-text {
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Modal Styles */
+.recall-modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 10000;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.recall-modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
+}
+
+.recall-modal-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  width: 90%;
+  max-width: 400px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.recall-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.recall-modal-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+}
+
+.recall-modal-close {
+  background: none;
+  border: none;
+  font-size: 28px;
+  color: #6b7280;
+  cursor: pointer;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.recall-modal-close:hover {
+  background: #f3f4f6;
+}
+
+.recall-modal-body {
+  padding: 0;
+  overflow-y: auto;
+  max-height: calc(80vh - 65px);
+}
+
+.recall-loading,
+.recall-error,
+.recall-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: #6b7280;
+}
+
+.recall-error {
+  color: #dc2626;
+}
+
+.recall-folder-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 20px;
+  border: none;
+  border-bottom: 1px solid #e5e7eb;
+  background: white;
+  cursor: pointer;
+  transition: background 0.2s;
+  text-align: left;
+  font-size: 14px;
+  color: #111827;
+}
+
+.recall-folder-item:hover {
+  background: #f9fafb;
+}
+
+.recall-folder-item:last-child {
+  border-bottom: none;
+}
+
+.recall-folder-item svg {
+  flex-shrink: 0;
+  color: #6b7280;
+}
+
+/* Toast Styles */
+.recall-toast {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: white;
+  color: #111827;
+  padding: 12px 20px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  font-size: 14px;
+  font-weight: 500;
+  z-index: 10001;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: all 0.3s;
+}
+
+.recall-toast-show {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.recall-toast-success {
+  background: #10b981;
+  color: white;
+}
+
+.recall-toast-error {
+  background: #ef4444;
+  color: white;
+}
+
+.recall-toast-info {
+  background: #3b82f6;
+  color: white;
+}

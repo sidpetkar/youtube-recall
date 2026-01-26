@@ -1,0 +1,87 @@
+"use client"
+
+import * as React from "react"
+import { Button } from "@/components/ui/button"
+import { RefreshCw } from "lucide-react"
+import { useSyncVideos } from "@/hooks/use-videos"
+import { useToast } from "@/components/ui/use-toast"
+import { createClient } from "@/lib/supabase/client"
+
+export function SyncButton() {
+  const [youtubeConnected, setYoutubeConnected] = React.useState(false)
+  const syncMutation = useSyncVideos()
+  const { toast } = useToast()
+  const supabase = createClient()
+
+  React.useEffect(() => {
+    // Check if YouTube is connected
+    const checkAuth = async () => {
+      const { data: { user } } = await supabase.auth.getUser()
+
+      if (user) {
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("youtube_access_token")
+          .eq("id", user.id)
+          .single()
+
+        setYoutubeConnected(!!profile?.youtube_access_token)
+      }
+    }
+
+    checkAuth()
+
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => {
+      checkAuth()
+    })
+
+    return () => subscription.unsubscribe()
+  }, [supabase])
+
+  const handleSync = async () => {
+    if (!youtubeConnected) {
+      toast({
+        title: "YouTube not connected",
+        description: "Please sign in again to grant YouTube access",
+        variant: "destructive",
+      })
+      return
+    }
+
+    try {
+      const result = await syncMutation.mutateAsync()
+
+      if (result.success) {
+        toast({
+          title: "Sync complete!",
+          description: `Added ${result.newVideosCount} new video${result.newVideosCount !== 1 ? "s" : ""} out of ${result.totalVideos} liked videos`,
+        })
+      } else {
+        toast({
+          title: "Sync failed",
+          description: result.errors?.join(", ") || "Unknown error",
+          variant: "destructive",
+        })
+      }
+    } catch (error: any) {
+      toast({
+        title: "Sync failed",
+        description: error.message || "Failed to sync videos",
+        variant: "destructive",
+      })
+    }
+  }
+
+  return (
+    <Button
+      variant="outline"
+      size="sm"
+      onClick={handleSync}
+      disabled={syncMutation.isPending}
+    >
+      <RefreshCw className={`h-4 w-4 mr-2 ${syncMutation.isPending ? "animate-spin" : ""}`} />
+      {syncMutation.isPending ? "Syncing..." : "Sync Videos"}
+    </Button>
+  )
+}

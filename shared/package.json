@@ -1,0 +1,16 @@
+{
+  "name": "@recall/shared",
+  "version": "1.0.0",
+  "description": "Shared types, constants, and utilities for Recall YouTube Organiser",
+  "main": "index.ts",
+  "types": "index.ts",
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  },
+  "keywords": ["recall", "shared", "types"],
+  "author": "",
+  "license": "MIT",
+  "devDependencies": {
+    "typescript": "^5.5.0"
+  }
+}
