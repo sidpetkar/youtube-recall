@@ -5,21 +5,120 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 
+// Chrome extension types
+declare global {
+  interface Window {
+    chrome?: {
+      runtime?: {
+        sendMessage: (
+          extensionId: string,
+          message: unknown,
+          callback?: (response: unknown) => void
+        ) => void
+      }
+    }
+  }
+}
+
 export default function AuthPage() {
   const [loading, setLoading] = React.useState(false)
+  const [user, setUser] = React.useState<any>(null)
+  const [extensionStatus, setExtensionStatus] = React.useState<string>("checking...")
+  const [syncStatus, setSyncStatus] = React.useState<string>("")
   const supabase = createClient()
   const router = useRouter()
+  
+  const extensionId = process.env.NEXT_PUBLIC_CHROME_EXTENSION_ID || ""
 
   React.useEffect(() => {
     // Check if already signed in
     const checkAuth = async () => {
       const { data: { user } } = await supabase.auth.getUser()
       if (user) {
-        router.push("/")
+        setUser(user)
       }
     }
     checkAuth()
-  }, [supabase, router])
+    
+    // Check extension status
+    checkExtension()
+  }, [supabase])
+  
+  const checkExtension = async () => {
+    if (!extensionId) {
+      setExtensionStatus("Extension ID not configured")
+      return
+    }
+    
+    if (!window.chrome?.runtime?.sendMessage) {
+      setExtensionStatus("Not in Chrome browser")
+      return
+    }
+    
+    try {
+      window.chrome.runtime.sendMessage(
+        extensionId,
+        { type: "PING" },
+        (response: any) => {
+          if (chrome.runtime?.lastError) {
+            setExtensionStatus("Extension not found - check ID")
+            return
+          }
+          if (response?.success) {
+            setExtensionStatus(`Connected (v${response.version})`)
+          } else {
+            setExtensionStatus("Extension not responding")
+          }
+        }
+      )
+    } catch (e) {
+      setExtensionStatus("Error checking extension")
+    }
+  }
+  
+  const syncToExtension = async () => {
+    setSyncStatus("Syncing...")
+    
+    if (!extensionId) {
+      setSyncStatus("No extension ID configured")
+      return
+    }
+    
+    const { data: { session } } = await supabase.auth.getSession()
+    if (!session) {
+      setSyncStatus("Not logged in")
+      return
+    }
+    
+    try {
+      window.chrome?.runtime?.sendMessage(
+        extensionId,
+        {
+          type: "AUTH_SYNC",
+          accessToken: session.access_token,
+          refreshToken: session.refresh_token,
+          expiresAt: session.expires_at,
+          user: {
+            id: session.user.id,
+            email: session.user.email,
+          },
+        },
+        (response: any) => {
+          if (chrome.runtime?.lastError) {
+            setSyncStatus("Failed: " + chrome.runtime.lastError.message)
+            return
+          }
+          if (response?.success) {
+            setSyncStatus("Synced successfully! Reload extension.")
+          } else {
+            setSyncStatus("Failed: " + (response?.error || "Unknown error"))
+          }
+        }
+      )
+    } catch (e: any) {
+      setSyncStatus("Error: " + e.message)
+    }
+  }
 
   const handleSignIn = async () => {
     setLoading(true)
@@ -39,6 +138,74 @@ export default function AuthPage() {
       console.error("Error signing in:", error)
       setLoading(false)
     }
+  }
+
+  // If user is logged in, show sync option
+  if (user) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-background to-muted p-4">
+        <div className="w-full max-w-md space-y-8 text-center">
+          <div className="space-y-2">
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-primary">
+              <span className="text-4xl font-bold text-primary-foreground">YT</span>
+            </div>
+            <h1 className="text-2xl font-bold tracking-tight">Welcome back!</h1>
+            <p className="text-muted-foreground">{user.email}</p>
+          </div>
+
+          <div className="space-y-4 rounded-lg border bg-card p-8 shadow-lg">
+            <div className="space-y-2">
+              <h2 className="text-xl font-semibold">Chrome Extension Sync</h2>
+              <p className="text-sm text-muted-foreground">
+                Sync your login to the Recall Chrome extension
+              </p>
+            </div>
+            
+            <div className="rounded-md bg-muted p-3 text-left text-sm">
+              <p><strong>Extension Status:</strong> {extensionStatus}</p>
+              <p className="text-xs text-muted-foreground mt-1">
+                ID: {extensionId ? `${extensionId.substring(0, 8)}...` : "Not set"}
+              </p>
+            </div>
+
+            <Button
+              size="lg"
+              className="w-full"
+              onClick={syncToExtension}
+              disabled={!extensionId || extensionStatus.includes("not")}
+            >
+              Sync to Extension
+            </Button>
+            
+            {syncStatus && (
+              <p className={`text-sm ${syncStatus.includes("success") ? "text-green-600" : "text-red-600"}`}>
+                {syncStatus}
+              </p>
+            )}
+
+            <div className="flex gap-2 pt-4">
+              <Button variant="outline" className="flex-1" onClick={() => router.push("/")}>
+                Go to App
+              </Button>
+              <Button 
+                variant="ghost" 
+                className="flex-1"
+                onClick={async () => {
+                  await supabase.auth.signOut()
+                  setUser(null)
+                }}
+              >
+                Sign Out
+              </Button>
+            </div>
+          </div>
+          
+          <p className="text-xs text-muted-foreground">
+            After syncing, reload the extension in Chrome and try again.
+          </p>
+        </div>
+      </div>
+    )
   }
 
   return (
