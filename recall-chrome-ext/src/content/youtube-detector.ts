@@ -1,5 +1,7 @@
 import { extractYouTubeVideoId } from "@shared/utils/youtube"
 
+const APP_URL = "https://youtube-recall.vercel.app"
+
 // Floating/inline button containers
 let floatingButton: HTMLDivElement | null = null
 let inlineButton: HTMLButtonElement | null = null
@@ -134,8 +136,8 @@ async function handleButtonClick() {
   
   if (!response.authenticated) {
     showToast("Please sign in to Recall first", "error")
-    // Open popup
-    chrome.runtime.sendMessage({ action: "openPopup" })
+    // Redirect to auth page
+    window.open(`${APP_URL}/auth`, "_blank")
     return
   }
   

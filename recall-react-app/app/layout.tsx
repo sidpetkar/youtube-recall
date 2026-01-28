@@ -24,6 +24,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning className={bricolageGrotesque.variable}>
+      <head>
+        <meta name="google-site-verification" content="-dWScSuzsChBd8Wu6zL9Hnq3yfzKzW_iDVpPZrX5QRs" />
+      </head>
       <body className={`${bricolageGrotesque.className} overflow-x-hidden`}>
         <ThemeProvider
           attribute="class"

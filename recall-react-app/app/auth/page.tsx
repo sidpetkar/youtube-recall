@@ -215,7 +215,7 @@ export default function AuthPage() {
           <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-2xl bg-primary">
             <span className="text-4xl font-bold text-primary-foreground">YT</span>
           </div>
-          <h1 className="text-4xl font-bold tracking-tight">YouTube Knowledge Manager</h1>
+          <h1 className="text-4xl font-bold tracking-tight">Recall – YouTube Knowledge Manager</h1>
           <p className="text-lg text-muted-foreground">
             Organize and manage your YouTube liked videos with AI-powered tagging
           </p>
@@ -266,14 +266,20 @@ export default function AuthPage() {
           </div>
         </div>
 
-        <div className="space-y-2 text-sm text-muted-foreground">
-          <p>✨ Features:</p>
-          <div className="flex flex-wrap justify-center gap-4">
-            <span>📁 Smart Folders</span>
-            <span>🏷️ Auto-Tagging</span>
-            <span>🔄 Auto-Sync</span>
-            <span>🔒 Secure & Private</span>
-          </div>
+        <div className="flex justify-center gap-4 text-sm text-muted-foreground">
+          <a 
+            href="/privacy" 
+            className="hover:text-foreground underline transition-colors"
+          >
+            Privacy Policy
+          </a>
+          <span>|</span>
+          <a 
+            href="/terms" 
+            className="hover:text-foreground underline transition-colors"
+          >
+            Terms of Service
+          </a>
         </div>
       </div>
     </div>

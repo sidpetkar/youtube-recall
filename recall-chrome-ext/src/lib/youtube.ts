@@ -38,7 +38,7 @@ export async function getCurrentVideoId(): Promise<string | null> {
 /**
  * Open the web app in a new tab
  */
-export function openWebApp() {
-  const appUrl = import.meta.env.VITE_APP_URL || "http://localhost:3000"
-  chrome.tabs.create({ url: appUrl })
+export function openWebApp(path: string = "") {
+  const appUrl = import.meta.env.VITE_APP_URL || "https://youtube-recall.vercel.app"
+  chrome.tabs.create({ url: `${appUrl}${path}` })
 }

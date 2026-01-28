@@ -35,9 +35,10 @@ chrome.runtime.onMessageExternal.addListener(
       "http://localhost:3000",
       "http://127.0.0.1:3000",
       "https://localhost:3000",
+      "https://youtube-recall.vercel.app",
     ]
     
-    if (!sender.origin || !allowedOrigins.some(o => sender.origin?.startsWith(o.replace(":3000", "")))) {
+    if (!sender.origin || !allowedOrigins.some(o => sender.origin === o || sender.origin?.startsWith(o.replace(":3000", "")))) {
       console.warn("Message from unauthorized origin:", sender.origin)
       sendResponse({ success: false, error: "Unauthorized origin" })
       return true
