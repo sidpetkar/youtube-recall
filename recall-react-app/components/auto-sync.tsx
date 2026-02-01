@@ -10,6 +10,7 @@ import { useToast } from "@/components/ui/use-toast"
  * AutoSync component handles automatic syncing of YouTube videos
  * - Syncs on every page load/refresh (when user lands on the app)
  * - Syncs on every login (SIGNED_IN auth event)
+ * - Syncs when user switches back to the web app tab (visibilitychange)
  * - Periodic background sync every 30 minutes (when tab is visible)
  * - Manual "Sync Videos" button is still available in the header
  */
@@ -72,6 +73,17 @@ export function AutoSync() {
     })
     return () => subscription.unsubscribe()
   }, [supabase, runSync])
+
+  // Sync when user switches back to the web app tab (e.g. after liking on YouTube)
+  React.useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible") {
+        runSync(false)
+      }
+    }
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange)
+  }, [runSync])
 
   // Periodic sync every 30 minutes (only if last sync was > 60 min ago)
   React.useEffect(() => {

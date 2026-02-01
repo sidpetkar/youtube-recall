@@ -42,8 +42,30 @@ export function getAuthenticatedClient(accessToken: string, refreshToken?: strin
   return oauth2Client
 }
 
-export async function getLikedVideos(accessToken: string, refreshToken?: string, maxResults: number = 10) {
+/** Callback when OAuth tokens are refreshed (e.g. new access_token) - persist to DB so next request has fresh token */
+export type OnTokensRefreshed = (tokens: {
+  access_token?: string | null
+  refresh_token?: string | null
+  expiry_date?: number | null
+}) => void | Promise<void>
+
+export async function getLikedVideos(
+  accessToken: string,
+  refreshToken?: string,
+  maxResults: number = 10,
+  onTokensRefreshed?: OnTokensRefreshed
+) {
   const auth = getAuthenticatedClient(accessToken, refreshToken)
+
+  // Persist new tokens when Google client auto-refreshes (access_token expires ~1h)
+  if (onTokensRefreshed) {
+    auth.on("tokens", (tokens) => {
+      void Promise.resolve(onTokensRefreshed(tokens)).catch((err) =>
+        console.error("Failed to persist refreshed YouTube tokens:", err)
+      )
+    })
+  }
+
   const youtube = google.youtube({ version: "v3", auth })
 
   try {

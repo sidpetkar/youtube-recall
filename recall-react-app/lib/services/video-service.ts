@@ -41,11 +41,25 @@ export class VideoService {
         throw new Error("YouTube not connected. Please connect your YouTube account first.")
       }
 
-      // Fetch liked videos from YouTube API
+      // Persist refreshed tokens to profile so next sync uses fresh access_token (avoids stale-token issues)
+      const onTokensRefreshed = async (tokens: {
+        access_token?: string | null
+        refresh_token?: string | null
+      }) => {
+        const updates: { youtube_access_token?: string; youtube_refresh_token?: string | null } = {}
+        if (tokens.access_token) updates.youtube_access_token = tokens.access_token
+        if (tokens.refresh_token !== undefined) updates.youtube_refresh_token = tokens.refresh_token ?? null
+        if (Object.keys(updates).length > 0) {
+          await supabase.from("profiles").update(updates).eq("id", userId)
+        }
+      }
+
+      // Fetch liked videos from YouTube API (callback saves refreshed tokens to profile)
       const youtubeVideos = await getLikedVideos(
         profile.youtube_access_token,
         profile.youtube_refresh_token || undefined,
-        50 // Fetch up to 50 videos
+        50, // Fetch up to 50 videos
+        onTokensRefreshed
       )
 
       if (youtubeVideos.length === 0) {
