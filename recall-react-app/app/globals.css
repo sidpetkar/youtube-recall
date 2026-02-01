@@ -24,6 +24,9 @@
     --input: 214.3 31.8% 91.4%;
     --ring: 222.2 84% 4.9%;
     --radius: 0.5rem;
+    /* Main content sheet: white in light */
+    --main-sheet: 0 0% 100%;
+    --main-sheet-foreground: 222.2 84% 4.9%;
   }
 
   .dark {
@@ -46,10 +49,13 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
+    /* Main content sheet in dark: slightly elevated (equivalent of white surface) */
+    --main-sheet: 217.2 32.6% 17.5%;
+    --main-sheet-foreground: 210 40% 98%;
   }
 
   :root {
-    /* #F7F7F3 for sidebar and top header */
+    /* #F7F7F3 for sidebar and top header (light mode) */
     --sidebar-background: 60 14% 97%;
     --sidebar-foreground: 240 5.3% 26.1%;
     --sidebar-primary: 240 5.9% 10%;
