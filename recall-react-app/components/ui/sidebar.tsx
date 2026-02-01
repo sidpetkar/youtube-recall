@@ -347,7 +347,7 @@ const SidebarHeader = React.forwardRef<
       ref={ref}
       data-sidebar="header"
       className={cn(
-        "flex h-16 shrink-0 items-center gap-2 border-b border-sidebar-border px-4",
+        "flex h-16 shrink-0 items-center gap-2 px-4",
         className
       )}
       {...props}
@@ -365,7 +365,7 @@ const SidebarFooter = React.forwardRef<
       ref={ref}
       data-sidebar="footer"
       className={cn(
-        "flex h-16 shrink-0 items-center gap-2 border-t border-sidebar-border px-4",
+        "flex h-16 shrink-0 items-center gap-2 px-4",
         className
       )}
       {...props}
