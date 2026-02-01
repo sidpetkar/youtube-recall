@@ -1,4 +1,5 @@
 // @ts-nocheck
+export const dynamic = "force-dynamic"
 import { NextResponse } from "next/server"
 import { getTokensFromCode } from "@/lib/youtube"
 import { createClient, createAdminClient } from "@/lib/supabase/server"

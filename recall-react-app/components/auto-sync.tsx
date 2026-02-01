@@ -8,83 +8,99 @@ import { useToast } from "@/components/ui/use-toast"
 
 /**
  * AutoSync component handles automatic syncing of YouTube videos
- * - Syncs on login if last sync > 1 hour ago
+ * - Syncs on every page load/refresh (when user lands on the app)
+ * - Syncs on every login (SIGNED_IN auth event)
  * - Periodic background sync every 30 minutes (when tab is visible)
+ * - Manual "Sync Videos" button is still available in the header
  */
 export function AutoSync() {
   const syncMutation = useSyncVideos()
   const { toast } = useToast()
   const supabase = createClient()
-  const [hasInitialSynced, setHasInitialSynced] = React.useState(false)
+  const syncInProgressRef = React.useRef(false)
 
-  React.useEffect(() => {
-    let intervalId: NodeJS.Timeout | null = null
+  const runSync = React.useCallback(
+    async (showToast: boolean = false) => {
+      if (syncInProgressRef.current || syncMutation.isPending) return
 
-    const checkAndSync = async (showToast: boolean = false) => {
       try {
-        // Get current user
         const {
           data: { user },
         } = await supabase.auth.getUser()
 
-        if (!user) {
-          return
-        }
+        if (!user) return
 
-        // Get user profile to check last sync time and YouTube connection
         const { data: profile } = await supabase
           .from("profiles")
           .select("last_sync_at, youtube_access_token")
           .eq("id", user.id)
           .single()
 
-        if (!profile || !profile.youtube_access_token) {
-          return // YouTube not connected
+        if (!profile?.youtube_access_token) return
+
+        syncInProgressRef.current = true
+        const result = await syncMutation.mutateAsync()
+
+        if (result.success && showToast && result.newVideosCount > 0) {
+          toast({
+            title: "Sync complete",
+            description: `Added ${result.newVideosCount} new video${result.newVideosCount !== 1 ? "s" : ""}`,
+          })
         }
-
-        // Check if should sync
-        if (shouldAutoSync(profile.last_sync_at, 60)) {
-          // 60 minutes
-          console.log("Auto-syncing videos...")
-
-          const result = await syncMutation.mutateAsync()
-
-          if (result.success && showToast && result.newVideosCount > 0) {
-            toast({
-              title: "Auto-sync complete",
-              description: `Added ${result.newVideosCount} new video${result.newVideosCount !== 1 ? "s" : ""}`,
-            })
-          }
-        }
-      } catch (error: any) {
+      } catch (error) {
         console.error("Auto-sync error:", error)
-        // Don't show error toast for auto-sync to avoid annoying users
+      } finally {
+        syncInProgressRef.current = false
       }
-    }
+    },
+    [supabase, syncMutation, toast]
+  )
 
-    // Initial sync on mount (only once per session)
-    if (!hasInitialSynced) {
-      checkAndSync(false) // Don't show toast on initial load
-      setHasInitialSynced(true)
-    }
+  // Sync on every page load/refresh (mount)
+  React.useEffect(() => {
+    runSync(false)
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps -- run once on mount for page load/refresh
 
-    // Set up periodic sync (every 30 minutes)
-    intervalId = setInterval(
-      () => {
-        if (isDocumentVisible()) {
-          checkAndSync(true) // Show toast for periodic syncs
-        }
-      },
-      30 * 60 * 1000
-    ) // 30 minutes
-
-    return () => {
-      if (intervalId) {
-        clearInterval(intervalId)
+  // Sync on login (auth state change to SIGNED_IN)
+  React.useEffect(() => {
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "SIGNED_IN") {
+        runSync(false)
       }
-    }
-  }, [supabase, syncMutation, toast, hasInitialSynced])
+    })
+    return () => subscription.unsubscribe()
+  }, [supabase, runSync])
 
-  // This component doesn't render anything
+  // Periodic sync every 30 minutes (only if last sync was > 60 min ago)
+  React.useEffect(() => {
+    const intervalId = setInterval(async () => {
+      if (!isDocumentVisible()) return
+
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser()
+        if (!user) return
+
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("last_sync_at, youtube_access_token")
+          .eq("id", user.id)
+          .single()
+
+        if (!profile?.youtube_access_token) return
+        if (!shouldAutoSync(profile.last_sync_at, 60)) return
+
+        await runSync(true)
+      } catch {
+        // ignore
+      }
+    }, 30 * 60 * 1000)
+
+    return () => clearInterval(intervalId)
+  }, [supabase, runSync])
+
   return null
 }

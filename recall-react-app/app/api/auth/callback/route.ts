@@ -1,4 +1,5 @@
 // @ts-nocheck
+export const dynamic = "force-dynamic"
 import { createClient, createAdminClient } from "@/lib/supabase/server"
 import { NextResponse } from "next/server"
 
