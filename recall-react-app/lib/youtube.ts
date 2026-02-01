@@ -97,6 +97,7 @@ export async function getLikedVideos(
     } while (pageToken && videoIds.length < maxResults)
 
     if (videoIds.length === 0) {
+      console.info("[YouTube] getLikedVideos: playlist LL returned 0 items (empty or no access)")
       return []
     }
 
@@ -134,9 +135,12 @@ export async function getLikedVideos(
       }
     })
 
+    console.info("[YouTube] getLikedVideos: fetched", videos.length, "videos from liked playlist (LL)")
     return videos
-  } catch (error) {
-    console.error("Error fetching liked videos:", error)
+  } catch (error: any) {
+    const message = error?.message || String(error)
+    const code = error?.code ?? error?.response?.status
+    console.error("[YouTube] getLikedVideos failed:", message, "code:", code, error)
     throw error
   }
 }

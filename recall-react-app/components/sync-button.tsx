@@ -53,14 +53,27 @@ export function SyncButton() {
       const result = await syncMutation.mutateAsync()
 
       if (result.success) {
+        const fromYt = result.totalFromYouTube ?? result.totalVideos
+        const existing = result.existingCount ?? 0
+        const newCount = result.newVideosCount
+        let description: string
+        if (fromYt === 0) {
+          description =
+            "No videos returned from YouTube. Make sure you've liked videos and that you connected YouTube with the same Google account you use on YouTube."
+        } else {
+          description = `Fetched ${fromYt} from YouTube. ${existing} already in library. ${newCount} new added.`
+        }
         toast({
-          title: "Sync complete!",
-          description: `Added ${result.newVideosCount} new video${result.newVideosCount !== 1 ? "s" : ""} out of ${result.totalVideos} liked videos`,
+          title: "Sync complete",
+          description,
         })
       } else {
+        const desc = result.youtubeError
+          ? `YouTube: ${result.youtubeError} Try reconnecting YouTube in Settings (same Google account you use to like videos).`
+          : result.errors?.join(", ") || "Unknown error"
         toast({
           title: "Sync failed",
-          description: result.errors?.join(", ") || "Unknown error",
+          description: desc,
           variant: "destructive",
         })
       }

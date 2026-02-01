@@ -235,7 +235,7 @@ const Sidebar = React.forwardRef<
       >
         <div
           className={cn(
-            "flex h-full w-[var(--sidebar-width)] flex-col bg-sidebar border-r border-sidebar-border group-data-[collapsible=icon]:border-r-0",
+            "flex h-full w-[var(--sidebar-width)] flex-col bg-sidebar group-data-[collapsible=icon]:border-r-0",
             "duration-200 ease-linear",
             state === "collapsed" && collapsible === "icon" && "w-[var(--sidebar-width-icon)]"
           )}
@@ -310,7 +310,7 @@ const SidebarInset = React.forwardRef<
     <main
       ref={ref}
       className={cn(
-        "relative flex min-h-svh flex-1 flex-col bg-background w-full max-w-full overflow-x-hidden",
+        "relative flex min-h-svh flex-1 flex-col bg-sidebar w-full max-w-full overflow-x-hidden",
         "peer-data-[variant=inset]:min-w-0",
         className
       )}

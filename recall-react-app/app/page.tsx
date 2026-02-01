@@ -7,6 +7,7 @@ import { AppHeader } from "@/components/app-header"
 import { RecentlyLikedCarousel } from "@/components/recently-liked-carousel"
 import { FoldersSection } from "@/components/folders-section"
 import { AutoSync } from "@/components/auto-sync"
+import { MainSheet } from "@/components/main-sheet"
 import { useVideos } from "@/hooks/use-videos"
 import { createClient } from "@/lib/supabase/client"
 import { useRouter } from "next/navigation"
@@ -74,13 +75,12 @@ export default function Home() {
       />
       <SidebarInset>
         <AppHeader />
-        <main className="flex flex-1 flex-col gap-8 p-4 md:p-6 lg:p-8">
-          {/* Auto-sync component runs in background */}
-          <AutoSync />
-
-          <RecentlyLikedCarousel videos={recentVideos} isLoading={false} />
-          
-          <FoldersSection />
+        <main className="flex flex-1 flex-col p-4 md:p-6 lg:p-8">
+          <MainSheet className="gap-8">
+            <AutoSync />
+            <RecentlyLikedCarousel videos={recentVideos} isLoading={false} />
+            <FoldersSection />
+          </MainSheet>
         </main>
       </SidebarInset>
     </SidebarProvider>

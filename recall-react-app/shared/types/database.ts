@@ -119,6 +119,12 @@ export interface SyncResult {
   totalVideos: number
   errors?: string[]
   syncedAt: string
+  /** For debugging: how many videos YouTube API returned from the liked playlist */
+  totalFromYouTube?: number
+  /** For debugging: how many of those were already in the user's library */
+  existingCount?: number
+  /** When sync fails due to YouTube API (e.g. token, scope, or playlist) */
+  youtubeError?: string
 }
 
 export interface MoveVideoResult {

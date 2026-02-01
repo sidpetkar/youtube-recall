@@ -14,6 +14,7 @@ import { useRouter } from "next/navigation"
 import { LayoutGrid, List, Loader2 } from "lucide-react"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { TagFilter } from "@/components/tag-filter"
+import { MainSheet } from "@/components/main-sheet"
 import type { VideoWithTags } from "@/lib/types/database"
 
 const PAGE_SIZE = 50
@@ -92,7 +93,8 @@ export default function LikedVideosPage() {
       />
       <SidebarInset>
         <AppHeader />
-        <main className="flex flex-1 flex-col gap-4 p-4 md:p-6 lg:p-8">
+        <main className="flex flex-1 flex-col p-4 md:p-6 lg:p-8">
+          <MainSheet className="gap-4">
           <div className="flex items-center justify-between">
             <div>
               <h1 className="text-2xl font-bold">
@@ -235,6 +237,7 @@ export default function LikedVideosPage() {
               )}
             </div>
           )}
+          </MainSheet>
         </main>
       </SidebarInset>
     </SidebarProvider>

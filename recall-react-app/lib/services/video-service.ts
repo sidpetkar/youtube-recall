@@ -56,18 +56,38 @@ export class VideoService {
 
       // Fetch liked videos from YouTube API (callback saves refreshed tokens to profile)
       // Sync as much as possible (up to 250) so latest changes are reflected
-      const youtubeVideos = await getLikedVideos(
-        profile.youtube_access_token,
-        profile.youtube_refresh_token || undefined,
-        250,
-        onTokensRefreshed
-      )
+      let youtubeVideos: Awaited<ReturnType<typeof getLikedVideos>>
+      try {
+        youtubeVideos = await getLikedVideos(
+          profile.youtube_access_token,
+          profile.youtube_refresh_token || undefined,
+          250,
+          onTokensRefreshed
+        )
+      } catch (ytError: any) {
+        const message = ytError?.message || String(ytError)
+        console.error("YouTube API error in getLikedVideos:", message, ytError)
+        return {
+          success: false,
+          newVideosCount: 0,
+          totalVideos: 0,
+          totalFromYouTube: 0,
+          existingCount: 0,
+          youtubeError: message,
+          errors: [message],
+          syncedAt: new Date().toISOString(),
+        }
+      }
+
+      const totalFromYouTube = youtubeVideos.length
 
       if (youtubeVideos.length === 0) {
         return {
           success: true,
           newVideosCount: 0,
           totalVideos: 0,
+          totalFromYouTube: 0,
+          existingCount: 0,
           syncedAt: new Date().toISOString(),
         }
       }
@@ -75,6 +95,7 @@ export class VideoService {
       // Get existing video IDs to avoid duplicates
       const youtubeIds = youtubeVideos.map((v) => v.videoId)
       const existingIds = await this.getExistingYouTubeIds(userId, youtubeIds)
+      const existingCount = existingIds.length
 
       // Filter out videos that already exist
       const newVideos = youtubeVideos.filter((v) => !existingIds.includes(v.videoId))
@@ -90,6 +111,8 @@ export class VideoService {
           success: true,
           newVideosCount: 0,
           totalVideos: youtubeVideos.length,
+          totalFromYouTube: totalFromYouTube,
+          existingCount,
           syncedAt: new Date().toISOString(),
         }
       }
@@ -107,6 +130,8 @@ export class VideoService {
         success: true,
         newVideosCount: insertedVideos.length,
         totalVideos: youtubeVideos.length,
+        totalFromYouTube: totalFromYouTube,
+        existingCount,
         syncedAt: new Date().toISOString(),
       }
     } catch (error: any) {
