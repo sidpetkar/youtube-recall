@@ -77,7 +77,7 @@ export interface Database {
         Row: {
           id: string
           user_id: string
-          folder_id: string
+          folder_id: string | null
           youtube_id: string
           title: string
           channel_name: string
@@ -86,13 +86,14 @@ export interface Database {
           duration: string | null
           notes: string | null
           liked_at: string | null
+          resume_at_seconds: number | null
           created_at: string
           updated_at: string
         }
         Insert: {
           id?: string
           user_id: string
-          folder_id: string
+          folder_id?: string | null
           youtube_id: string
           title: string
           channel_name: string
@@ -101,13 +102,14 @@ export interface Database {
           duration?: string | null
           notes?: string | null
           liked_at?: string | null
+          resume_at_seconds?: number | null
           created_at?: string
           updated_at?: string
         }
         Update: {
           id?: string
           user_id?: string
-          folder_id?: string
+          folder_id?: string | null
           youtube_id?: string
           title?: string
           channel_name?: string
@@ -116,6 +118,7 @@ export interface Database {
           duration?: string | null
           notes?: string | null
           liked_at?: string | null
+          resume_at_seconds?: number | null
           created_at?: string
           updated_at?: string
         }

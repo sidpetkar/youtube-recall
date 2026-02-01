@@ -3,15 +3,15 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query"
 
 /**
- * Move a video to a different folder
+ * Move a video to a different folder, or remove from folder (newFolderId: null).
  */
 export function useMoveVideo() {
   const queryClient = useQueryClient()
 
   return useMutation<
-    { success: boolean; videoId: string; newFolderId: string },
+    { success: boolean; videoId: string; newFolderId: string | null },
     Error,
-    { videoId: string; newFolderId: string }
+    { videoId: string; newFolderId: string | null }
   >({
     mutationFn: async ({ videoId, newFolderId }) => {
       const response = await fetch("/api/videos/move", {

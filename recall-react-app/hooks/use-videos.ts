@@ -4,15 +4,18 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
 import type { VideoWithTags, SyncResult } from "@/lib/types/database"
 
 /**
- * Fetch videos with optional filters
+ * Fetch videos with optional filters and pagination.
+ * limit/offset: 50 per page; hasMore indicates if "Load more" can fetch more.
  */
 export function useVideos(
   folderId?: string,
   search?: string,
-  tagIds?: string[]
+  tagIds?: string[],
+  limit: number = 50,
+  offset: number = 0
 ) {
-  return useQuery<{ videos: VideoWithTags[] }>({
-    queryKey: ["videos", folderId, search, tagIds?.join(",")],
+  return useQuery<{ videos: VideoWithTags[]; hasMore: boolean }>({
+    queryKey: ["videos", folderId, search, tagIds?.join(","), limit, offset],
     queryFn: async () => {
       const params = new URLSearchParams()
       if (folderId) params.append("folderId", folderId)
@@ -20,6 +23,8 @@ export function useVideos(
       if (tagIds && tagIds.length > 0) {
         params.append("tagIds", tagIds.join(","))
       }
+      params.set("limit", String(limit))
+      params.set("offset", String(offset))
 
       const response = await fetch(`/api/videos?${params}`)
       if (!response.ok) {
@@ -58,15 +63,15 @@ export function useSyncVideos() {
 }
 
 /**
- * Move a video to a different folder
+ * Move a video to a different folder, or remove from folder (newFolderId: null).
  */
 export function useMoveVideo() {
   const queryClient = useQueryClient()
 
   return useMutation<
-    { success: boolean; videoId: string; newFolderId: string },
+    { success: boolean; videoId: string; newFolderId: string | null },
     Error,
-    { videoId: string; newFolderId: string }
+    { videoId: string; newFolderId: string | null }
   >({
     mutationFn: async ({ videoId, newFolderId }) => {
       const response = await fetch("/api/videos/move", {
@@ -85,8 +90,9 @@ export function useMoveVideo() {
       return response.json()
     },
     onSuccess: () => {
-      // Invalidate videos query to refetch
+      // Invalidate videos and folders to refresh counts
       queryClient.invalidateQueries({ queryKey: ["videos"] })
+      queryClient.invalidateQueries({ queryKey: ["folders"] })
     },
   })
 }

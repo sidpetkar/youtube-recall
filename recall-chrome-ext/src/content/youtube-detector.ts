@@ -260,18 +260,29 @@ function renderFolders(modal: HTMLElement, folders: any[]) {
 }
 
 /**
+ * Get current playback position (seconds) from the YouTube video element
+ */
+function getCurrentPlaybackSeconds(): number {
+  const video = document.querySelector("video")
+  if (!video || Number.isNaN(video.currentTime)) return 0
+  return Math.floor(video.currentTime)
+}
+
+/**
  * Handle adding current video to folder
  */
 async function handleAddToFolder(folderId: string) {
   const videoUrl = window.location.href
-  
+  const resumeAtSeconds = getCurrentPlaybackSeconds()
+
   showToast("Saving video...", "info")
-  
+
   try {
     const response = await chrome.runtime.sendMessage({
       action: "addToFolder",
       folderId,
       url: videoUrl,
+      resumeAtSeconds: resumeAtSeconds > 0 ? resumeAtSeconds : undefined,
     })
     
     if (response.success) {

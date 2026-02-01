@@ -23,7 +23,9 @@ export async function GET(request: NextRequest) {
     const folderId = searchParams.get("folderId")
     const search = searchParams.get("search")
     const tagIds = searchParams.get("tagIds")?.split(",").filter(Boolean) || []
-    const limit = parseInt(searchParams.get("limit") || "50")
+    // Pagination: 50 per page for both Liked and folder views (keeps mobile light; use Load more for more)
+    const limit = Math.min(parseInt(searchParams.get("limit") || "50", 10) || 50, 100)
+    const offset = Math.max(0, parseInt(searchParams.get("offset") || "0", 10))
 
     // Build query
     let query = supabase
@@ -38,9 +40,9 @@ export async function GET(request: NextRequest) {
       .eq("user_id", user.id)
       .order("liked_at", { ascending: false })
       .order("created_at", { ascending: false })
-      .limit(limit)
+      .range(offset, offset + limit - 1)
 
-    // Apply filters
+    // Apply filters: when folderId provided, only videos in that folder; otherwise all user videos (including liked-only with folder_id null)
     if (folderId) {
       query = query.eq("folder_id", folderId)
     }
@@ -101,7 +103,8 @@ export async function GET(request: NextRequest) {
       tags: video.tags?.map((vt: any) => vt.tag).filter(Boolean) || [],
     }))
 
-    return NextResponse.json({ videos }, { status: 200 })
+    const hasMore = videos.length === limit
+    return NextResponse.json({ videos, hasMore }, { status: 200 })
   } catch (error: any) {
     console.error("Error fetching videos:", error)
     return NextResponse.json(

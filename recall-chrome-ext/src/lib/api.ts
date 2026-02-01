@@ -29,17 +29,20 @@ export async function fetchFolders(accessToken: string): Promise<Folder[]> {
 }
 
 /**
- * Add a video by URL to a specific folder
+ * Add a video by URL to a specific folder.
+ * resumeAtSeconds: when saving from YouTube, current playback position (seconds) so the app can open the video at that point.
  */
 export async function addVideoByUrl(
   url: string,
   folderId: string | undefined,
-  accessToken: string
+  accessToken: string,
+  resumeAtSeconds?: number | null
 ): Promise<AddVideoByUrlResponse> {
   try {
     const body: AddVideoByUrlRequest = {
       url,
       folderId,
+      ...(resumeAtSeconds != null && resumeAtSeconds > 0 ? { resume_at_seconds: Math.floor(resumeAtSeconds) } : {}),
     }
 
     const response = await fetch(`${APP_URL}/api/videos/add-by-url`, {

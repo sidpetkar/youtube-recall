@@ -55,10 +55,11 @@ export class VideoService {
       }
 
       // Fetch liked videos from YouTube API (callback saves refreshed tokens to profile)
+      // Sync as much as possible (up to 250) so latest changes are reflected
       const youtubeVideos = await getLikedVideos(
         profile.youtube_access_token,
         profile.youtube_refresh_token || undefined,
-        50, // Fetch up to 50 videos
+        250,
         onTokensRefreshed
       )
 
@@ -93,20 +94,8 @@ export class VideoService {
         }
       }
 
-      // Get user's default Inbox folder
-      const { data: inboxFolder, error: folderError } = await supabase
-        .from("folders")
-        .select("id")
-        .eq("user_id", userId)
-        .eq("is_default", true)
-        .single()
-
-      if (folderError || !inboxFolder) {
-        throw new Error("Default Inbox folder not found")
-      }
-
-      // Insert new videos with auto-tagging
-      const insertedVideos = await this.insertVideos(userId, newVideos, inboxFolder.id)
+      // Insert new liked videos without assigning to any folder (liked-only: appear on Liked page and carousel only)
+      const insertedVideos = await this.insertVideos(userId, newVideos, null)
 
       // Update last sync time
       await supabase
@@ -153,16 +142,18 @@ export class VideoService {
   }
 
   /**
-   * Insert new videos with auto-tagging
+   * Insert new videos with auto-tagging.
+   * folderId = null: liked-only (Liked page + carousel, not in any folder).
+   * folderId = string: video is in that folder (and also on Liked page + carousel).
    */
   static async insertVideos(
     userId: string,
     youtubeVideos: YouTubeVideo[],
-    folderId: string
+    folderId: string | null
   ): Promise<Video[]> {
     const supabase = await createClient()
 
-    // Prepare video inserts - use likedAt (when user liked) or fallback to now so new syncs appear in "Recently Liked"
+    // Prepare video inserts - use likedAt (when user liked) or fallback to now so new syncs appear in carousel
     const nowIso = new Date().toISOString()
     const videoInserts: VideoInsert[] = youtubeVideos.map((ytVideo) => ({
       user_id: userId,
@@ -267,9 +258,10 @@ export class VideoService {
   }
 
   /**
-   * Move a video to a different folder
+   * Move a video to a different folder, or remove from folder (set folder_id to null).
+   * When newFolderId is null, the video becomes "liked only" (Liked page + carousel, not in any folder).
    */
-  static async moveVideo(videoId: string, newFolderId: string, userId: string): Promise<void> {
+  static async moveVideo(videoId: string, newFolderId: string | null, userId: string): Promise<void> {
     const supabase = await createClient()
 
     // Verify user owns the video
@@ -282,6 +274,19 @@ export class VideoService {
 
     if (!video) {
       throw new Error("Video not found or you don't have permission")
+    }
+
+    if (newFolderId === null) {
+      // Remove from folder: set folder_id to null (video stays in library, appears on Liked page only)
+      const { error } = await supabase
+        .from("videos")
+        .update({ folder_id: null })
+        .eq("id", videoId)
+        .eq("user_id", userId)
+      if (error) {
+        throw new Error("Failed to remove video from folder")
+      }
+      return
     }
 
     // Verify user owns the folder

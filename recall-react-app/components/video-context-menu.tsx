@@ -16,6 +16,7 @@ import { useMoveVideo } from "@/hooks/use-move-video"
 import { useToast } from "@/components/ui/use-toast"
 import {
   Folder,
+  FolderMinus,
   ExternalLink,
   Copy,
   Share2,
@@ -31,6 +32,8 @@ interface VideoContextMenuProps {
   videoId: string
   title: string
   currentFolderId?: string
+  /** When set, "Open in YouTube" starts at this position (seconds) */
+  resumeAtSeconds?: number | null
   isLiked?: boolean
   onUnlike?: () => void
   onDelete?: () => void
@@ -42,6 +45,7 @@ export function VideoContextMenu({
   videoId,
   title,
   currentFolderId,
+  resumeAtSeconds,
   isLiked = true,
   onUnlike,
   onDelete,
@@ -80,8 +84,36 @@ export function VideoContextMenu({
     }
   }
 
+  const handleRemoveFromFolder = async () => {
+    try {
+      await moveVideoMutation.mutateAsync({
+        videoId: videoDbId,
+        newFolderId: null,
+      })
+
+      toast({
+        title: "Removed from folder",
+        description: "Video is now in Liked Videos only (not in any folder)",
+      })
+    } catch (error: any) {
+      toast({
+        title: "Failed to remove from folder",
+        description: error.message,
+        variant: "destructive",
+      })
+    }
+  }
+
+  const getYouTubeUrl = () => {
+    const url = `https://www.youtube.com/watch?v=${videoId}`
+    if (resumeAtSeconds != null && resumeAtSeconds > 0) {
+      return `${url}&t=${Math.floor(resumeAtSeconds)}`
+    }
+    return url
+  }
+
   const handleOpenVideo = () => {
-    window.open(`https://www.youtube.com/watch?v=${videoId}`, "_blank")
+    window.open(getYouTubeUrl(), "_blank")
   }
 
   const handleOpenChannel = () => {
@@ -92,7 +124,7 @@ export function VideoContextMenu({
   }
 
   const handleCopyLink = () => {
-    const url = `https://www.youtube.com/watch?v=${videoId}`
+    const url = getYouTubeUrl()
     navigator.clipboard.writeText(url)
     toast({
       title: "Link copied",
@@ -164,6 +196,14 @@ export function VideoContextMenu({
             )}
           </ContextMenuSubContent>
         </ContextMenuSub>
+
+        {/* Remove from folder - only when video is in a folder */}
+        {currentFolderId && (
+          <ContextMenuItem onClick={handleRemoveFromFolder}>
+            <FolderMinus className="mr-2 h-4 w-4" />
+            Remove from folder
+          </ContextMenuItem>
+        )}
 
         <ContextMenuSeparator />
 

@@ -13,7 +13,7 @@ import { DraggableVideoCard } from "@/components/draggable-video-card"
 import { Card, CardContent } from "@/components/ui/card"
 
 export interface Video {
-  dbId?: string // Database ID for drag and drop
+  dbId?: string
   videoId: string
   title: string
   channelName: string
@@ -21,6 +21,8 @@ export interface Video {
   thumbnail: string
   duration?: string
   publishedAt?: string
+  folderName?: string | null
+  resumeAtSeconds?: number | null
 }
 
 interface RecentlyLikedCarouselProps {
@@ -35,7 +37,7 @@ export function RecentlyLikedCarousel({
   if (isLoading) {
     return (
       <div className="space-y-4">
-        <h2 className="text-xl font-bold">Recently Liked</h2>
+        <h2 className="text-xl font-bold">Liked Videos</h2>
         <div className="flex gap-4">
           {[...Array(5)].map((_, i) => (
             <Card key={i} className="w-[300px] animate-pulse">
@@ -59,7 +61,7 @@ export function RecentlyLikedCarousel({
 
   return (
     <div className="space-y-4">
-      <h2 className="text-xl font-bold">Recently Liked</h2>
+      <h2 className="text-xl font-bold">Liked Videos</h2>
       <Carousel
         opts={{
           align: "start",
@@ -82,6 +84,8 @@ export function RecentlyLikedCarousel({
                   thumbnail={video.thumbnail}
                   duration={video.duration}
                   publishedAt={video.publishedAt}
+                  folderName={video.folderName}
+                  resumeAtSeconds={video.resumeAtSeconds}
                 />
               ) : (
                 <VideoCard {...video} />

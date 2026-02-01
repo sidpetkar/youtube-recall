@@ -23,21 +23,29 @@ export async function POST(request: NextRequest) {
     const body = await request.json()
     const { videoId, newFolderId } = body
 
-    if (!videoId || !newFolderId) {
+    if (!videoId) {
       return NextResponse.json(
-        { error: "videoId and newFolderId are required" },
+        { error: "videoId is required" },
         { status: 400 }
       )
     }
 
-    // Move video
-    await VideoService.moveVideo(videoId, newFolderId, user.id)
+    // newFolderId can be null to "remove from folder" (video becomes liked-only)
+    if (newFolderId !== null && newFolderId !== undefined && typeof newFolderId !== "string") {
+      return NextResponse.json(
+        { error: "newFolderId must be a folder id or null" },
+        { status: 400 }
+      )
+    }
+
+    // Move video (or remove from folder when newFolderId is null)
+    await VideoService.moveVideo(videoId, newFolderId ?? null, user.id)
 
     return NextResponse.json(
       {
         success: true,
         videoId,
-        newFolderId,
+        newFolderId: newFolderId ?? null,
       },
       { status: 200 }
     )

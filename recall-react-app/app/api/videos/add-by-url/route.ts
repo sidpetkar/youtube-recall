@@ -8,6 +8,32 @@ import { extractYouTubeVideoId } from "@shared/utils/youtube"
 import type { AddVideoByUrlRequest, AddVideoByUrlResponse } from "@shared/types/api"
 import type { Video, Tag } from "@shared/types/database"
 
+/** Resolve target folder id: use provided folderId if valid, else default Inbox. */
+async function resolveTargetFolderId(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  folderId?: string
+): Promise<string> {
+  if (folderId) {
+    const { data: folder } = await supabase
+      .from("folders")
+      .select("id")
+      .eq("id", folderId)
+      .eq("user_id", userId)
+      .single()
+    if (folder) return folder.id
+    throw new Error("Folder not found or access denied")
+  }
+  const { data: inboxFolder } = await supabase
+    .from("folders")
+    .select("id")
+    .eq("user_id", userId)
+    .eq("is_default", true)
+    .single()
+  if (!inboxFolder) throw new Error("Default folder not found")
+  return inboxFolder.id
+}
+
 /**
  * POST /api/videos/add-by-url
  * Manually add a video by YouTube URL
@@ -25,7 +51,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body: AddVideoByUrlRequest = await request.json()
-    const { url, folderId } = body
+    const { url, folderId, resume_at_seconds } = body
 
     if (!url || typeof url !== "string") {
       return NextResponse.json<AddVideoByUrlResponse>(
@@ -52,8 +78,9 @@ export async function POST(request: NextRequest) {
       .single()
 
     if (existingVideo) {
-      let folderName = "a folder"
+      // Video already in a folder: cannot add again (user must move it)
       if (existingVideo.folder_id) {
+        let folderName = "a folder"
         const { data: folder } = await supabase
           .from("folders")
           .select("name")
@@ -62,54 +89,92 @@ export async function POST(request: NextRequest) {
         if (folder?.name) {
           folderName = `"${folder.name}"`
         }
+        return NextResponse.json<AddVideoByUrlResponse>(
+          {
+            success: false,
+            error: "Video already exists in your library",
+            message: `"${existingVideo.title}" is already saved in ${folderName}`,
+          },
+          { status: 409 }
+        )
       }
 
-      return NextResponse.json<AddVideoByUrlResponse>(
-        {
-          success: false,
-          error: "Video already exists in your library",
-          message: `"${existingVideo.title}" is already saved in ${folderName}`,
-        },
-        { status: 409 }
-      )
-    }
-
-    // Get folder (use provided folderId or default Inbox)
-    let targetFolderId = folderId
-    if (!targetFolderId) {
-      const { data: inboxFolder } = await supabase
-        .from("folders")
-        .select("id")
-        .eq("user_id", user.id)
-        .eq("is_default", true)
-        .single()
-
-      if (!inboxFolder) {
+      // Video exists but has no folder (liked-only): add it to the chosen folder (update folder_id)
+      let targetFolderId: string
+      try {
+        targetFolderId = await resolveTargetFolderId(supabase, user.id, folderId)
+      } catch (e: any) {
+        const status = e.message?.includes("Folder not found") ? 404 : 500
         return NextResponse.json<AddVideoByUrlResponse>(
-          { success: false, error: "Default folder not found" },
+          { success: false, error: e.message || "Folder not found" },
+          { status }
+        )
+      }
+      const updatePayload: { folder_id: string; resume_at_seconds?: number | null } = { folder_id: targetFolderId }
+      if (resume_at_seconds !== undefined && resume_at_seconds !== null) {
+        updatePayload.resume_at_seconds = Math.max(0, Math.floor(Number(resume_at_seconds)))
+      }
+      const { error: updateError } = await supabase
+        .from("videos")
+        .update(updatePayload)
+        .eq("id", existingVideo.id)
+        .eq("user_id", user.id)
+
+      if (updateError) {
+        console.error("Error moving video to folder:", updateError)
+        return NextResponse.json<AddVideoByUrlResponse>(
+          { success: false, error: "Failed to add video to folder" },
           { status: 500 }
         )
       }
-      targetFolderId = inboxFolder.id
-    } else {
-      // Verify user owns the folder
-      const { data: folder } = await supabase
-        .from("folders")
-        .select("id")
-        .eq("id", targetFolderId)
-        .eq("user_id", user.id)
+
+      const { data: videoWithTags } = await supabase
+        .from("videos")
+        .select(
+          `
+          *,
+          tags:video_tags(tag:tags(*))
+        `
+        )
+        .eq("id", existingVideo.id)
         .single()
 
-      if (!folder) {
-        return NextResponse.json<AddVideoByUrlResponse>(
-          { success: false, error: "Folder not found or access denied" },
-          { status: 404 }
-        )
-      }
+      const video = videoWithTags
+        ? {
+            ...videoWithTags,
+            tags: videoWithTags.tags?.map((vt: any) => vt.tag).filter(Boolean) || [],
+          }
+        : null
+
+      return NextResponse.json<AddVideoByUrlResponse>(
+        {
+          success: true,
+          video: video as any,
+          message: "Video added to folder",
+        },
+        { status: 200 }
+      )
+    }
+
+    // New video: resolve target folder (provided folder or default Inbox)
+    let targetFolderId: string
+    try {
+      targetFolderId = await resolveTargetFolderId(supabase, user.id, folderId)
+    } catch (e: any) {
+      const status = e.message?.includes("Folder not found") ? 404 : 500
+      return NextResponse.json<AddVideoByUrlResponse>(
+        { success: false, error: e.message || "Folder not found" },
+        { status }
+      )
     }
 
     // Fetch video metadata from YouTube
     const youtubeVideo = await getVideoById(videoId)
+
+    const resumeSeconds =
+      resume_at_seconds !== undefined && resume_at_seconds !== null
+        ? Math.max(0, Math.floor(Number(resume_at_seconds)))
+        : null
 
     // Insert video into database
     const { data: insertedVideo, error: insertError } = await supabase
@@ -125,6 +190,7 @@ export async function POST(request: NextRequest) {
         duration: youtubeVideo.duration || null,
         notes: null,
         liked_at: null,
+        resume_at_seconds: resumeSeconds,
       })
       .select()
       .single()

@@ -9,6 +9,8 @@ import { Video, Tag } from "./database"
 export interface AddVideoByUrlRequest {
   url: string
   folderId?: string
+  /** Resume at this position (seconds) when opening the video from the app. Captured by extension when saving from YouTube. */
+  resume_at_seconds?: number | null
 }
 
 export interface AddVideoByUrlResponse {

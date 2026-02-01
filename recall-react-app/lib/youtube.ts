@@ -70,45 +70,57 @@ export async function getLikedVideos(
 
   try {
     // The "Liked videos" playlist has a special ID: "LL" for the authenticated user
-    // Get playlist items from the liked videos playlist
-    const playlistResponse = await youtube.playlistItems.list({
-      part: ["snippet", "contentDetails"],
-      playlistId: "LL", // Special playlist ID for liked videos
-      maxResults: maxResults,
-    })
-
-    // Extract video IDs and "liked at" (when added to playlist) from playlist items
+    // Paginate playlist items to sync as much as possible (most recent first)
     const videoIds: string[] = []
-    const videoIdToLikedAt = new Map<string, string>() // videoId -> ISO date when user liked it
-    playlistResponse.data.items?.forEach((item) => {
-      const videoId = item.contentDetails?.videoId
-      if (videoId) {
-        videoIds.push(videoId)
-        // snippet.publishedAt on playlist item = when the video was added to the playlist (when user liked it)
-        if (item.snippet?.publishedAt) {
-          videoIdToLikedAt.set(videoId, item.snippet.publishedAt)
+    const videoIdToLikedAt = new Map<string, string>()
+    let pageToken: string | undefined
+
+    do {
+      const playlistResponse = await youtube.playlistItems.list({
+        part: ["snippet", "contentDetails"],
+        playlistId: "LL",
+        maxResults: 50, // API max per page
+        pageToken: pageToken || undefined,
+      })
+
+      playlistResponse.data.items?.forEach((item) => {
+        const videoId = item.contentDetails?.videoId
+        if (videoId) {
+          videoIds.push(videoId)
+          if (item.snippet?.publishedAt) {
+            videoIdToLikedAt.set(videoId, item.snippet.publishedAt)
+          }
         }
-      }
-    })
+      })
+
+      pageToken = playlistResponse.data.nextPageToken ?? undefined
+    } while (pageToken && videoIds.length < maxResults)
 
     if (videoIds.length === 0) {
       return []
     }
 
-    // Get video details
-    const videosResponse = await youtube.videos.list({
-      part: ["snippet", "contentDetails", "statistics"],
-      id: videoIds,
-      maxResults: maxResults,
-    })
+    const idsToFetch = videoIds.slice(0, maxResults)
 
-    // Format the response - preserve playlist order (most recently liked first)
-    const videos = videosResponse.data.items?.map((video) => {
+    // Get video details in batches of 50 (API limit)
+    const allItems: Awaited<ReturnType<typeof youtube.videos.list>>["data"]["items"] = []
+    for (let i = 0; i < idsToFetch.length; i += 50) {
+      const batch = idsToFetch.slice(i, i + 50)
+      const videosResponse = await youtube.videos.list({
+        part: ["snippet", "contentDetails", "statistics"],
+        id: batch,
+        maxResults: batch.length,
+      })
+      allItems.push(...(videosResponse.data.items || []))
+    }
+
+    // Preserve playlist order (most recently liked first)
+    const orderMap = new Map(idsToFetch.map((id, idx) => [id, idx]))
+    const sorted = [...allItems].sort((a, b) => (orderMap.get(a.id!) ?? 0) - (orderMap.get(b.id!) ?? 0))
+
+    const videos = sorted.map((video) => {
       const snippet = video.snippet!
       const contentDetails = video.contentDetails!
-
-      // Calculate duration
-      const duration = parseDuration(contentDetails.duration || "")
 
       return {
         videoId: video.id!,
@@ -116,11 +128,11 @@ export async function getLikedVideos(
         channelName: snippet.channelTitle || "",
         channelThumbnail: snippet.thumbnails?.default?.url,
         thumbnail: snippet.thumbnails?.high?.url || snippet.thumbnails?.medium?.url || snippet.thumbnails?.default?.url || "",
-        duration: duration,
+        duration: parseDuration(contentDetails.duration || ""),
         publishedAt: formatDate(snippet.publishedAt),
-        likedAt: videoIdToLikedAt.get(video.id!) || undefined, // when user liked it (ISO string)
+        likedAt: videoIdToLikedAt.get(video.id!) || undefined,
       }
-    }) || []
+    })
 
     return videos
   } catch (error) {

@@ -232,6 +232,26 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 })
 
 /**
+ * Get current playback position (seconds) from the YouTube tab
+ */
+async function getResumeSecondsFromTab(tabId: number): Promise<number> {
+  try {
+    const results = await chrome.scripting.executeScript({
+      target: { tabId },
+      func: () => {
+        const video = document.querySelector("video")
+        if (!video || Number.isNaN(video.currentTime)) return 0
+        return Math.floor(video.currentTime)
+      },
+    })
+    const value = results?.[0]?.result
+    return typeof value === "number" && value > 0 ? value : 0
+  } catch {
+    return 0
+  }
+}
+
+/**
  * Handle adding current video to a folder
  */
 async function handleAddToFolder(folderId: string, tab?: chrome.tabs.Tab) {
@@ -240,16 +260,23 @@ async function handleAddToFolder(folderId: string, tab?: chrome.tabs.Tab) {
     if (!token) {
       throw new Error("Not authenticated")
     }
-    
+
     // Get current YouTube URL
     const url = await getCurrentYouTubeUrl()
     if (!url) {
       showNotification("Error", "Please navigate to a YouTube video page")
       return
     }
-    
+
+    // Get resume position from tab if available (context menu path)
+    let resumeAtSeconds: number | undefined
+    if (tab?.id) {
+      resumeAtSeconds = await getResumeSecondsFromTab(tab.id)
+      if (resumeAtSeconds === 0) resumeAtSeconds = undefined
+    }
+
     // Add video via API
-    const result = await addVideoByUrl(url, folderId, token)
+    const result = await addVideoByUrl(url, folderId, token, resumeAtSeconds)
     
     if (result.success) {
       const folder = foldersCache.find(f => f.id === folderId)
@@ -337,16 +364,16 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
   }
   
   if (request.action === "addToFolder") {
-    const { folderId, url } = request
+    const { folderId, url, resumeAtSeconds } = request
     getSessionFromStorage().then(token => {
       if (!token) {
         sendResponse({ success: false, error: "Not authenticated" })
         return
       }
-      
-      addVideoByUrl(url, folderId, token).then(result => {
+
+      addVideoByUrl(url, folderId, token, resumeAtSeconds).then(result => {
         sendResponse(result)
-        
+
         if (result.success) {
           const folder = foldersCache.find(f => f.id === folderId)
           showNotification(

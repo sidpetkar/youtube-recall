@@ -13,6 +13,10 @@ export interface VideoCardProps {
   thumbnail: string
   duration?: string
   publishedAt?: string
+  /** Folder name chip on top-right when video is in a folder */
+  folderName?: string | null
+  /** When set, open YouTube at this position (seconds) */
+  resumeAtSeconds?: number | null
   className?: string
 }
 
@@ -24,10 +28,16 @@ export function VideoCard({
   thumbnail,
   duration,
   publishedAt,
+  folderName,
+  resumeAtSeconds,
   className,
 }: VideoCardProps) {
   const handleClick = () => {
-    window.open(`https://www.youtube.com/watch?v=${videoId}`, "_blank")
+    const url = new URL(`https://www.youtube.com/watch?v=${videoId}`)
+    if (resumeAtSeconds != null && resumeAtSeconds > 0) {
+      url.searchParams.set("t", String(Math.floor(resumeAtSeconds)))
+    }
+    window.open(url.toString(), "_blank")
   }
 
   return (
@@ -45,6 +55,11 @@ export function VideoCard({
             alt={title}
             className="h-full w-full object-cover"
           />
+          {folderName && (
+            <span className="absolute top-2 right-2 rounded-md bg-primary/90 px-2 py-0.5 text-xs font-medium text-primary-foreground shadow-sm">
+              {folderName}
+            </span>
+          )}
           {duration && (
             <div className="absolute bottom-2 right-2 rounded bg-black/80 px-1.5 py-0.5 text-xs text-white">
               {duration}

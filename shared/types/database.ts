@@ -39,6 +39,7 @@ export interface Video {
   duration: string | null
   notes: string | null
   liked_at: string | null
+  resume_at_seconds: number | null
   created_at: string
   updated_at: string
 }

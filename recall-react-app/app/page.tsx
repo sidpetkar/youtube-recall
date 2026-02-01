@@ -47,9 +47,9 @@ export default function Home() {
     return () => subscription.unsubscribe()
   }, [supabase, router])
 
-  // Get only first 10 videos for carousel
+  // Get only first 10 videos for carousel (most recently liked)
   const recentVideos = (data?.videos || []).slice(0, 10).map((video) => ({
-    dbId: video.id, // Add database ID for drag and drop
+    dbId: video.id,
     videoId: video.youtube_id,
     title: video.title,
     channelName: video.channel_name,
@@ -57,6 +57,8 @@ export default function Home() {
     thumbnail: video.thumbnail_url,
     duration: video.duration || undefined,
     publishedAt: video.liked_at || undefined,
+    folderName: (video as any).folder?.name ?? null,
+    resumeAtSeconds: (video as any).resume_at_seconds ?? null,
   }))
 
   const handleFolderSelect = (folderId: string) => {

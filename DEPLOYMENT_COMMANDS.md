@@ -4,6 +4,132 @@ This document contains all the exact commands you need to run for deployment.
 
 ---
 
+## ⚡ Quick deploy (after code changes)
+
+Use these when you’ve changed code and want to ship updates.
+
+### 1. Run Supabase migration (if DB changed)
+
+If you added or changed migrations (e.g. `recall-react-app/supabase/migrations/`):
+
+1. Open **Supabase Dashboard** → your project → **SQL Editor**.
+2. Run the contents of the new migration file (e.g. `004_folder_id_nullable.sql`).
+3. Or with Supabase CLI from project root:  
+   `cd recall-react-app && supabase db push`
+
+### 2. Deploy web app (Vercel)
+
+From project root:
+
+```powershell
+cd "c:\Sid\Siddhant\AI Coding\recall-youtube-organiser"
+
+git add .
+git status
+git commit -m "Your short description of changes"
+git push origin main
+```
+
+Vercel will build and deploy from `main`. Check the **Deployments** tab in the Vercel project.
+
+### 3. Build Chrome extension (if extension code changed)
+
+```powershell
+cd recall-chrome-ext
+npm run build
+```
+
+Then either:
+
+- **Unpacked**: In Chrome go to `chrome://extensions`, enable Developer mode, “Load unpacked”, choose `recall-chrome-ext/dist`.
+- **Store**: Zip `recall-chrome-ext/dist` and upload a new version in the Chrome Web Store Developer Dashboard.
+
+---
+
+## 📋 Web app + Chrome extension: full deployment & submission
+
+### Web app deployment (Vercel)
+
+1. **Commit and push** (Vercel deploys from `main`):
+
+   ```powershell
+   cd "c:\Sid\Siddhant\AI Coding\recall-youtube-organiser"
+   git add .
+   git commit -m "Your message"
+   git push origin main
+   ```
+
+2. **Optional – run new DB migrations**  
+   Supabase Dashboard → SQL Editor → run any new migration files (e.g. `005_add_resume_at_seconds.sql`).
+
+3. **Check**  
+   Vercel project → **Deployments** → confirm latest deployment succeeded.
+
+---
+
+### Chrome extension: submit update to Chrome Web Store
+
+1. **Bump version** (required for each store update):
+
+   Edit `recall-chrome-ext/manifest.json`: set `"version": "1.0.1"` (or next version, e.g. `1.0.2`).
+
+2. **Build**:
+
+   ```powershell
+   cd "c:\Sid\Siddhant\AI Coding\recall-youtube-organiser\recall-chrome-ext"
+   npm run build
+   ```
+
+3. **Zip the built extension** (PowerShell, from repo root):
+
+   ```powershell
+   Compress-Archive -Path recall-chrome-ext\dist\* -DestinationPath recall-extension-v1.0.1.zip -Force
+   ```
+
+   The zip must contain the **contents** of `dist` (e.g. `manifest.json` at top level), not a `dist` folder inside.
+
+4. **Chrome Web Store Developer Dashboard**:
+
+   - Go to https://chrome.google.com/webstore/devconsole
+   - Open your **Recall** extension item
+   - Click **Update** (or **New version**)
+   - Upload the zip (e.g. `recall-extension-v1.0.1.zip`)
+   - Add **version** and **release notes** (e.g. "Resume at timestamp when saving from YouTube")
+   - Click **Submit for review**
+
+5. **After approval**  
+   The store serves the new version. Your extension ID does **not** change, so you do **not** need to update `NEXT_PUBLIC_CHROME_EXTENSION_ID` in Vercel.
+
+---
+
+## 🧪 Testing while the new extension is in review
+
+You can keep using the extension in two ways:
+
+### Option A: Use the **published** (current) extension from the store
+
+- In Chrome, go to the Chrome Web Store and install (or re-add) **Recall - YouTube Video Organizer**.
+- That is the **last approved** version (without the new features like resume-at-timestamp).
+- It works with the web app as before; **Extension Sync** on the auth page will work if `NEXT_PUBLIC_CHROME_EXTENSION_ID` in Vercel is set to your **published** extension ID.
+- You can use the extension normally until the new version is approved; new features will appear after the update goes live.
+
+### Option B: Use the **new** build locally (Load unpacked)
+
+- Build and load your latest code without waiting for review:
+
+  ```powershell
+  cd "c:\Sid\Siddhant\AI Coding\recall-youtube-organiser\recall-chrome-ext"
+  npm run build
+  ```
+
+- In Chrome: `chrome://extensions` → turn on **Developer mode** → **Load unpacked** → select the `recall-chrome-ext/dist` folder.
+- You get **all new features** (e.g. resume-at-timestamp) right away.
+- **Note:** The unpacked extension has a **different** ID than the published one. So on the auth page, "Extension Status" may show **Extension not found** and "Sync to Extension" may be disabled, unless you temporarily set `NEXT_PUBLIC_CHROME_EXTENSION_ID` in Vercel to this unpacked ID (then change it back to the published ID after the store update is live).
+
+**Summary:** Yes — you can use the **old** (current store) extension by re-adding it from the Chrome Web Store and use the app normally until the new version is approved. No need to wait for review to keep testing the rest of the app.
+
+---
+
 ## 📁 STEP 1: Git Repository Setup
 
 ### 1.1 Navigate to Project Root

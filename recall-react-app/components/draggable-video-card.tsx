@@ -9,7 +9,7 @@ import { cn } from "@/lib/utils"
 
 export interface DraggableVideoCardProps extends VideoCardProps {
   videoDbId: string // The database ID (not YouTube ID)
-  currentFolderId?: string
+  currentFolderId?: string | null
   onDragStart?: () => void
   onDragEnd?: () => void
 }
@@ -65,6 +65,7 @@ export function DraggableVideoCard({
       videoId={videoId}
       title={title}
       currentFolderId={currentFolderId}
+      resumeAtSeconds={(props as any).resumeAtSeconds}
     >
       <div
         ref={setNodeRef}
@@ -85,6 +86,8 @@ export function DraggableVideoCard({
           thumbnail={thumbnail}
           duration={duration}
           publishedAt={publishedAt}
+          folderName={props.folderName}
+          resumeAtSeconds={props.resumeAtSeconds}
           className={className}
           {...props}
         />
