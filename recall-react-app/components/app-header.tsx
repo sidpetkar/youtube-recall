@@ -15,7 +15,7 @@ export function AppHeader() {
             <Input
               type="search"
               placeholder="Search videos..."
-              className="pl-9"
+              className="pl-9 rounded-[8px]"
             />
           </div>
         </div>
