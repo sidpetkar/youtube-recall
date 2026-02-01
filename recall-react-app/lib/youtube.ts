@@ -55,11 +55,17 @@ export async function getLikedVideos(accessToken: string, refreshToken?: string,
       maxResults: maxResults,
     })
 
-    // Extract video IDs from playlist items
+    // Extract video IDs and "liked at" (when added to playlist) from playlist items
     const videoIds: string[] = []
+    const videoIdToLikedAt = new Map<string, string>() // videoId -> ISO date when user liked it
     playlistResponse.data.items?.forEach((item) => {
-      if (item.contentDetails?.videoId) {
-        videoIds.push(item.contentDetails.videoId)
+      const videoId = item.contentDetails?.videoId
+      if (videoId) {
+        videoIds.push(videoId)
+        // snippet.publishedAt on playlist item = when the video was added to the playlist (when user liked it)
+        if (item.snippet?.publishedAt) {
+          videoIdToLikedAt.set(videoId, item.snippet.publishedAt)
+        }
       }
     })
 
@@ -74,7 +80,7 @@ export async function getLikedVideos(accessToken: string, refreshToken?: string,
       maxResults: maxResults,
     })
 
-    // Format the response
+    // Format the response - preserve playlist order (most recently liked first)
     const videos = videosResponse.data.items?.map((video) => {
       const snippet = video.snippet!
       const contentDetails = video.contentDetails!
@@ -90,6 +96,7 @@ export async function getLikedVideos(accessToken: string, refreshToken?: string,
         thumbnail: snippet.thumbnails?.high?.url || snippet.thumbnails?.medium?.url || snippet.thumbnails?.default?.url || "",
         duration: duration,
         publishedAt: formatDate(snippet.publishedAt),
+        likedAt: videoIdToLikedAt.get(video.id!) || undefined, // when user liked it (ISO string)
       }
     }) || []
 

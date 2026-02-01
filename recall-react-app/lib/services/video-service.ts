@@ -148,7 +148,8 @@ export class VideoService {
   ): Promise<Video[]> {
     const supabase = await createClient()
 
-    // Prepare video inserts
+    // Prepare video inserts - use likedAt (when user liked) or fallback to now so new syncs appear in "Recently Liked"
+    const nowIso = new Date().toISOString()
     const videoInserts: VideoInsert[] = youtubeVideos.map((ytVideo) => ({
       user_id: userId,
       folder_id: folderId,
@@ -159,7 +160,7 @@ export class VideoService {
       thumbnail_url: ytVideo.thumbnail,
       duration: ytVideo.duration || null,
       notes: null,
-      liked_at: ytVideo.likedAt ? new Date(ytVideo.likedAt).toISOString() : null,
+      liked_at: ytVideo.likedAt ? new Date(ytVideo.likedAt).toISOString() : nowIso,
     }))
 
     // Insert videos
