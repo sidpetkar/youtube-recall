@@ -12,9 +12,21 @@ const bricolageGrotesque = Bricolage_Grotesque({
   variable: "--font-bricolage-grotesque",
 })
 
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+
 export const metadata: Metadata = {
-  title: "YouTube Liked Videos Organizer",
+  metadataBase: new URL(appUrl),
+  title: "Recall — YouTube Liked Videos Organizer",
   description: "Organize and manage your liked YouTube videos",
+  openGraph: {
+    title: "Recall — YouTube Liked Videos Organizer",
+    description: "Organize and manage your liked YouTube videos",
+    url: appUrl,
+    siteName: "Recall",
+  },
+  alternates: {
+    canonical: appUrl,
+  },
 }
 
 export default function RootLayout({

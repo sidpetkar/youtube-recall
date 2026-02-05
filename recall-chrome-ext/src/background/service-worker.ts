@@ -35,7 +35,7 @@ chrome.runtime.onMessageExternal.addListener(
       "http://localhost:3000",
       "http://127.0.0.1:3000",
       "https://localhost:3000",
-      "https://youtube-recall.vercel.app",
+      "https://ytrecall.online",
     ]
     
     if (!sender.origin || !allowedOrigins.some(o => sender.origin === o || sender.origin?.startsWith(o.replace(":3000", "")))) {

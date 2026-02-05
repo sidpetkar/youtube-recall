@@ -267,11 +267,11 @@ GOCSPX-your_google_client_secret
 
 # Variable Name: NEXTAUTH_URL
 # Value: (WAIT - you'll update this after deployment)
-https://your-app-name.vercel.app
+https://ytrecall.online
 
 # Variable Name: NEXT_PUBLIC_APP_URL
 # Value: (WAIT - you'll update this after deployment)
-https://your-app-name.vercel.app
+https://ytrecall.online
 
 # Variable Name: NEXT_PUBLIC_SUPABASE_URL
 # Value: (get from your .env.local file)
@@ -300,18 +300,18 @@ your_youtube_api_key
 
 1. Click **"Deploy"**
 2. Wait for deployment (~2-3 minutes)
-3. **IMPORTANT**: Copy your production URL (e.g., `https://recall-youtube-organiser.vercel.app`)
+3. **IMPORTANT**: Copy your production URL (e.g., `https://ytrecall.online`)
 
 ### 2.5 Update Environment Variables with Actual URL
 
 1. Go to Vercel project → **Settings** → **Environment Variables**
 2. Edit `NEXTAUTH_URL`:
    - Delete old value
-   - Enter your actual Vercel URL: `https://your-actual-app-name.vercel.app`
+   - Enter your actual Vercel URL: `https://ytrecall.online`
    - Save
 3. Edit `NEXT_PUBLIC_APP_URL`:
    - Delete old value
-   - Enter your actual Vercel URL: `https://your-actual-app-name.vercel.app`
+   - Enter your actual Vercel URL: `https://ytrecall.online`
    - Save
 4. Go to **Deployments** tab
 5. Click **"Redeploy"** on the latest deployment
@@ -330,11 +330,11 @@ your_youtube_api_key
 4. Scroll to **"Authorized redirect URIs"**
 5. Click **"+ ADD URI"** and add:
    ```
-   https://your-actual-app-name.vercel.app/api/auth/callback
+   https://ytrecall.online/api/auth/callback
    ```
 6. Click **"+ ADD URI"** again and add:
    ```
-   https://your-actual-app-name.vercel.app/api/youtube/callback
+   https://ytrecall.online/api/youtube/callback
    ```
 7. Keep existing localhost URIs:
    ```
@@ -358,11 +358,11 @@ your_youtube_api_key
 5. Scroll to **"URL Configuration"**
 6. Under **"Site URL"**, change to:
    ```
-   https://your-actual-app-name.vercel.app
+   https://ytrecall.online
    ```
 7. Under **"Redirect URLs"**, add:
    ```
-   https://your-actual-app-name.vercel.app/**
+   https://ytrecall.online/**
    ```
    Keep existing:
    ```
@@ -380,7 +380,7 @@ your_youtube_api_key
    ```
    Or specifically:
    ```
-   https://your-actual-app-name.vercel.app
+   https://ytrecall.online
    http://localhost:3000
    ```
 
@@ -392,7 +392,7 @@ your_youtube_api_key
 
 ```powershell
 # Open in browser (replace with your actual URL)
-start https://your-actual-app-name.vercel.app
+start https://ytrecall.online
 ```
 
 ### 5.2 Test Checklist
@@ -436,7 +436,7 @@ VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
 
 # UPDATE THIS LINE with your production URL:
-VITE_APP_URL=https://your-actual-app-name.vercel.app
+VITE_APP_URL=https://ytrecall.online
 ```
 
 **Save and close**
@@ -687,7 +687,7 @@ GitHub Repository:
 https://github.com/YOUR_USERNAME/recall-youtube-organiser
 
 Production Web App:
-https://your-actual-app-name.vercel.app
+https://ytrecall.online
 
 Vercel Dashboard:
 https://vercel.com/your-username/recall-youtube-organiser

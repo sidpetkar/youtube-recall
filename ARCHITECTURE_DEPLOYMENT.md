@@ -103,10 +103,10 @@
 ### Production
 ```
 ┌─────────────────────────────────────────────────────────┐
-│ Web App: https://your-app-name.vercel.app              │
+│ Web App: https://ytrecall.online              │
 │ Extension: chrome-extension://PROD_EXTENSION_ID         │
 │ Supabase: https://mpltdhgnmdcincgvkcav.supabase.co     │
-│ Google OAuth: Redirect to your-app-name.vercel.app     │
+│ Google OAuth: Redirect to ytrecall.online     │
 └─────────────────────────────────────────────────────────┘
 ```
 
@@ -118,8 +118,8 @@
 
 | Variable | Local | Production |
 |----------|-------|------------|
-| `NEXTAUTH_URL` | `http://localhost:3000` | `https://your-app-name.vercel.app` |
-| `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` | `https://your-app-name.vercel.app` |
+| `NEXTAUTH_URL` | `http://localhost:3000` | `https://ytrecall.online` |
+| `NEXT_PUBLIC_APP_URL` | `http://localhost:3000` | `https://ytrecall.online` |
 | `GOOGLE_CLIENT_ID` | ✅ Same | ✅ Same |
 | `GOOGLE_CLIENT_SECRET` | ✅ Same | ✅ Same |
 | `NEXT_PUBLIC_SUPABASE_URL` | ✅ Same | ✅ Same |
@@ -132,7 +132,7 @@
 
 | Variable | Local | Production |
 |----------|-------|------------|
-| `VITE_APP_URL` | `http://localhost:3000` | `https://your-app-name.vercel.app` |
+| `VITE_APP_URL` | `http://localhost:3000` | `https://ytrecall.online` |
 | `VITE_SUPABASE_URL` | ✅ Same | ✅ Same |
 | `VITE_SUPABASE_ANON_KEY` | ✅ Same | ✅ Same |
 
@@ -141,8 +141,8 @@
 | Setting | Local | Production |
 |---------|-------|------------|
 | **Authorized Redirect URIs** | | |
-| Auth Callback | `http://localhost:3000/api/auth/callback` | `https://your-app-name.vercel.app/api/auth/callback` |
-| YouTube Callback | `http://localhost:3000/api/youtube/callback` | `https://your-app-name.vercel.app/api/youtube/callback` |
+| Auth Callback | `http://localhost:3000/api/auth/callback` | `https://ytrecall.online/api/auth/callback` |
+| YouTube Callback | `http://localhost:3000/api/youtube/callback` | `https://ytrecall.online/api/youtube/callback` |
 
 **Action**: Add production URIs (keep local ones for development)
 
@@ -150,9 +150,9 @@
 
 | Setting | Local | Production |
 |---------|-------|------------|
-| **Site URL** | `http://localhost:3000` | `https://your-app-name.vercel.app` |
-| **Redirect URLs** | `http://localhost:3000/**` | `https://your-app-name.vercel.app/**` |
-| **CORS Origins** | `http://localhost:3000` | `https://your-app-name.vercel.app` |
+| **Site URL** | `http://localhost:3000` | `https://ytrecall.online` |
+| **Redirect URLs** | `http://localhost:3000/**` | `https://ytrecall.online/**` |
+| **CORS Origins** | `http://localhost:3000` | `https://ytrecall.online` |
 
 **Action**: Add production URLs (keep local ones for development)
 
@@ -263,7 +263,7 @@
 - Cookies work seamlessly ✅
 
 **Cross-Origin (Requires Configuration)**
-- Web App: `your-app-name.vercel.app`
+- Web App: `ytrecall.online`
 - Extension: `chrome-extension://extension-id`
 - Requires:
   - Supabase cookie `SameSite: None`
@@ -320,7 +320,7 @@
 | Service | Type | URL | Where Used |
 |---------|------|-----|------------|
 | **Supabase** | Database | `https://mpltdhgnmdcincgvkcav.supabase.co` | Web App, Extension |
-| **Vercel** | Web Host | `https://your-app-name.vercel.app` | Production Web App |
+| **Vercel** | Web Host | `https://ytrecall.online` | Production Web App |
 | **GitHub** | Code Repo | `https://github.com/username/repo` | Version Control |
 | **Google OAuth** | Auth | `console.cloud.google.com` | OAuth Redirect URIs |
 | **Extension** | Chrome | `chrome-extension://extension-id` | Extension ID |

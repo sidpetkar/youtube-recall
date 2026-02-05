@@ -19,7 +19,7 @@
       "http://localhost/*",
       "http://127.0.0.1/*",
       "https://localhost/*",
-      "https://youtube-recall.vercel.app/*"
+      "https://ytrecall.online/*"
     ]
   },
   "background": {

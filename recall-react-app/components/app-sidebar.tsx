@@ -61,7 +61,7 @@ export function AppSidebar({ selectedFolderId, onSelectFolder }: AppSidebarProps
       <SidebarHeader>
         <div className="flex items-center px-2 py-1.5">
           <img
-            src="/recall-logo.png"
+            src="/recall-svg-logo.svg"
             alt="Recall"
             className="h-[58px] w-[150px] object-contain"
           />

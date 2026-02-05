@@ -46,8 +46,8 @@ Use this checklist to track your deployment progress.
 - [ ] Go to https://console.cloud.google.com/apis/credentials
 - [ ] Find OAuth 2.0 Client ID → Edit
 - [ ] Add Authorized Redirect URIs:
-  - [ ] `https://YOUR-APP-NAME.vercel.app/api/auth/callback`
-  - [ ] `https://YOUR-APP-NAME.vercel.app/api/youtube/callback`
+  - [ ] `https://ytrecall.online/api/auth/callback`
+  - [ ] `https://ytrecall.online/api/youtube/callback`
 - [ ] Keep localhost URIs for development
 - [ ] Click "Save"
 - [ ] Verify OAuth consent screen has YouTube scope
@@ -59,15 +59,15 @@ Use this checklist to track your deployment progress.
 - [ ] Go to https://supabase.com/dashboard
 - [ ] Select project: `mpltdhgnmdcincgvkcav`
 - [ ] Settings → API → URL Configuration
-- [ ] Add to "Site URL": `https://YOUR-APP-NAME.vercel.app`
-- [ ] Add to "Redirect URLs": `https://YOUR-APP-NAME.vercel.app/**`
+- [ ] Add to "Site URL": `https://ytrecall.online`
+- [ ] Add to "Redirect URLs": `https://ytrecall.online/**`
 - [ ] Verify CORS settings allow your domain
 
 ---
 
 ## ☑️ Phase 5: Test Production Web App
 
-- [ ] Visit production URL: `https://YOUR-APP-NAME.vercel.app`
+- [ ] Visit production URL: `https://ytrecall.online`
 - [ ] Click "Sign in with Google"
 - [ ] Complete OAuth flow successfully
 - [ ] Click "Connect YouTube"
@@ -84,7 +84,7 @@ Use this checklist to track your deployment progress.
 ## ☑️ Phase 6: Prepare Chrome Extension
 
 - [ ] Open `recall-chrome-ext\.env.local`
-- [ ] Update `VITE_APP_URL` to production: `https://YOUR-APP-NAME.vercel.app`
+- [ ] Update `VITE_APP_URL` to production: `https://ytrecall.online`
 - [ ] Save file
 - [ ] Open `recall-chrome-ext\manifest.json`
 - [ ] Update version if needed: `"version": "1.0.0"`
@@ -186,8 +186,8 @@ Track your URLs here:
 # Copy these values from your local recall-react-app/.env.local file
 GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=GOCSPX-your_google_client_secret
-NEXTAUTH_URL=https://YOUR-APP-NAME.vercel.app
-NEXT_PUBLIC_APP_URL=https://YOUR-APP-NAME.vercel.app
+NEXTAUTH_URL=https://ytrecall.online
+NEXT_PUBLIC_APP_URL=https://ytrecall.online
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
@@ -200,7 +200,7 @@ NEXT_PUBLIC_CHROME_EXTENSION_ID=(add after extension deployed)
 # Copy these values from your local recall-chrome-ext/.env.local file
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-VITE_APP_URL=https://YOUR-APP-NAME.vercel.app
+VITE_APP_URL=https://ytrecall.online
 ```
 
 ---

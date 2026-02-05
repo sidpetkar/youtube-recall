@@ -1,6 +1,6 @@
 import { extractYouTubeVideoId } from "@shared/utils/youtube"
 
-const APP_URL = "https://youtube-recall.vercel.app"
+const APP_URL = import.meta.env.VITE_APP_URL || "https://ytrecall.online"
 
 // Floating/inline button containers
 let floatingButton: HTMLDivElement | null = null

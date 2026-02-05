@@ -45,7 +45,7 @@ Deploy your YouTube organizer so it works in production (not just localhost)
 │ • Deploy                                                    │
 │ • Get production URL                                        │
 │                                                             │
-│ Result: https://your-app-name.vercel.app                    │
+│ Result: https://ytrecall.online                    │
 └─────────────────────────────────────────────────────────────┘
                             ▼
 ┌─────────────────────────────────────────────────────────────┐

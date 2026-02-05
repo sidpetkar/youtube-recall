@@ -49,8 +49,8 @@
     --border: 217.2 32.6% 17.5%;
     --input: 217.2 32.6% 17.5%;
     --ring: 212.7 26.8% 83.9%;
-    /* Main content sheet in dark: slightly elevated (equivalent of white surface) */
-    --main-sheet: 217.2 32.6% 17.5%;
+    /* Main content sheet in dark: neutral grey (no blue tint) */
+    --main-sheet: 217 5% 16%;
     --main-sheet-foreground: 210 40% 98%;
   }
 

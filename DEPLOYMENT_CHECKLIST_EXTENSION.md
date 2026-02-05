@@ -44,7 +44,7 @@ git push origin main
    - Click the refresh icon
 
 2. **Test Auth Sync:**
-   - Go to `https://youtube-recall.vercel.app/auth`
+   - Go to `https://ytrecall.online/auth`
    - Sign in with Google
    - You should see "Extension Status" and "Sync to Extension" button
    - Click "Sync to Extension"

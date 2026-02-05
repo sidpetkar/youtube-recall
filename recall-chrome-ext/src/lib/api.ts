@@ -1,7 +1,7 @@
 import type { Folder } from "@shared/types/database"
 import type { AddVideoByUrlRequest, AddVideoByUrlResponse } from "@shared/types/api"
 
-const APP_URL = import.meta.env.VITE_APP_URL || "https://youtube-recall.vercel.app"
+const APP_URL = import.meta.env.VITE_APP_URL || "https://ytrecall.online"
 
 /**
  * Fetch user's folders from the API
