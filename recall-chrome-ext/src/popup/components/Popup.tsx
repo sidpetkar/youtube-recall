@@ -18,7 +18,7 @@ export function Popup() {
 
   if (authenticated === null) {
     return (
-      <div className="w-80 p-6">
+      <div className="w-[420px] min-h-[360px] flex items-center justify-center p-4">
         <LoadingSpinner />
       </div>
     )
@@ -30,9 +30,9 @@ export function Popup() {
 
   if (!currentUrl) {
     return (
-      <div className="w-80 p-6">
+      <div className="w-[420px] p-4">
         <div className="text-center">
-          <h2 className="text-lg font-semibold mb-2">Not on YouTube</h2>
+          <h2 className="text-lg font-bold tracking-tight mb-2">Not on YouTube</h2>
           <p className="text-sm text-muted-foreground">
             Navigate to a YouTube video to save it to your library
           </p>

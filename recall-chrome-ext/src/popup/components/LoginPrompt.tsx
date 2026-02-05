@@ -6,17 +6,17 @@ export function LoginPrompt() {
   
   return (
     <div className="w-80 p-6">
-      <div className="text-center space-y-4">
+      <div className="text-center space-y-5">
         <div className="flex justify-center">
-          <img 
-            src={iconUrl} 
-            alt="Recall" 
-            className="w-16 h-16 rounded-xl"
+          <img
+            src={iconUrl}
+            alt="Recall"
+            className="w-16 h-16 rounded-lg shadow-sm"
           />
         </div>
 
         <div>
-          <h2 className="text-lg font-semibold mb-2">Welcome to Recall</h2>
+          <h2 className="text-lg font-bold tracking-tight mb-2">Welcome to Recall</h2>
           <p className="text-sm text-muted-foreground">
             Sign in to start organizing your YouTube videos
           </p>
@@ -24,7 +24,7 @@ export function LoginPrompt() {
 
         <button
           onClick={() => openWebApp("/auth")}
-          className="w-full bg-primary text-primary-foreground hover:bg-primary/90 font-medium py-2 px-4 rounded-md transition-colors"
+          className="w-full rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 font-medium py-2.5 px-4 transition-colors shadow-sm"
         >
           Sign In
         </button>

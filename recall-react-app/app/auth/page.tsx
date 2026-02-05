@@ -164,7 +164,7 @@ export default function AuthPage() {
             <p className="text-muted-foreground">{user.email}</p>
           </div>
 
-          <div className="space-y-4 rounded-lg border border-border bg-white p-8 shadow-lg">
+          <div className="space-y-4 rounded-2xl border border-border bg-white p-8 shadow-lg">
             <div className="space-y-2">
               <h2 className="text-xl font-semibold">Chrome Extension Sync</h2>
               <p className="text-sm text-muted-foreground">
@@ -235,7 +235,7 @@ export default function AuthPage() {
           </p>
         </div>
 
-        <div className="space-y-4 rounded-lg border border-border bg-white p-8 shadow-lg">
+        <div className="space-y-4 rounded-2xl border border-border bg-white p-8 shadow-lg">
           <div className="space-y-2">
             <h2 className="text-xl font-semibold">Get started</h2>
             <p className="text-sm text-muted-foreground">

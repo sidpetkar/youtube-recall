@@ -56,6 +56,41 @@ npm run build
 3. Click "Load unpacked"
 4. Select the `dist` folder from this project
 
+### How to test and see changes
+
+1. **Build the extension** (after any code or style change):
+   ```bash
+   cd recall-chrome-ext
+   npm run build
+   ```
+2. **Reload the extension** in Chrome: open `chrome://extensions/`, find "Recall - YouTube Video Organizer", and click the **reload** (circular arrow) icon.
+3. **Test the modal (Save to Folder on YouTube)**:
+   - Go to any YouTube video page (e.g. `youtube.com/watch?v=...`).
+   - Click the **Save** button (inline or floating). The "Save to Folder" modal should open with 16px padding, white folder cards (no shadow), wider width, and only ~5 folders visible with the rest in a scroll.
+4. **Test the popup**:
+   - Click the Recall extension icon in the toolbar (while on a YouTube video page). The popup should show the same folder list styling and scroll after 5 items.
+5. If you don’t see updates, do a **hard refresh** on the YouTube tab (Ctrl+Shift+R) or close and reopen the tab, and ensure you clicked reload on the extension.
+
+### Testing with local web app (auth redirect)
+
+When the extension points to `VITE_APP_URL=http://localhost:3000`, Sign In opens your **local** web app. For the auth flow to finish on localhost (instead of redirecting to production), add localhost to your auth config. **No web app code changes**—only dashboard/config:
+
+1. **Google Cloud Console** (APIs & Services → Credentials → your OAuth 2.0 Client ID):
+   - Under **Authorized redirect URIs**, add:  
+     `http://localhost:3000/api/auth/callback`
+   - Keep your production redirect URI(s) as they are.
+
+2. **Supabase** (Authentication → URL Configuration):
+   - Under **Redirect URLs**, add:  
+     `http://localhost:3000/**`  
+     (or at least `http://localhost:3000/api/auth/callback` if you prefer a single path).
+
+3. **Local web app**: In `recall-react-app` set `.env.local` with:
+   - `NEXT_PUBLIC_APP_URL=http://localhost:3000`
+   - Same Supabase and NextAuth vars you use in prod (or separate dev Supabase if you prefer).
+
+4. Run the web app on port 3000, then from the extension click Sign In. You should be sent to Google, then back to **localhost:3000** with the session set there; the extension will then see the local session.
+
 ## Usage
 
 ### First Time Setup

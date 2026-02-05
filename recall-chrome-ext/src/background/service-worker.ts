@@ -12,6 +12,9 @@ let foldersCache: Folder[] = []
 let foldersCacheTimestamp = 0
 const CACHE_DURATION = 5 * 60 * 1000 // 5 minutes
 
+// Serialize context menu setup to avoid "duplicate id" when multiple calls run at once
+let setupContextMenuPromise: Promise<void> = Promise.resolve()
+
 /**
  * Initialize the extension
  */
@@ -26,80 +29,77 @@ chrome.runtime.onInstalled.addListener(async () => {
  * This is how the web app sends auth tokens to the extension
  */
 chrome.runtime.onMessageExternal.addListener(
-  async (request, sender, sendResponse) => {
-    console.log("External message received from:", sender.origin)
-    console.log("Message type:", request?.type)
-    
-    // Verify the sender is from our web app
+  (request, sender, sendResponse) => {
+    // Return true synchronously so Chrome keeps the message channel open for async sendResponse
     const allowedOrigins = [
       "http://localhost:3000",
       "http://127.0.0.1:3000",
       "https://localhost:3000",
       "https://ytrecall.online",
+      "https://www.ytrecall.online",
     ]
-    
+
     if (!sender.origin || !allowedOrigins.some(o => sender.origin === o || sender.origin?.startsWith(o.replace(":3000", "")))) {
       console.warn("Message from unauthorized origin:", sender.origin)
       sendResponse({ success: false, error: "Unauthorized origin" })
       return true
     }
-    
-    try {
-      switch (request?.type) {
-        case "AUTH_SYNC":
-          // Web app is sending auth token
-          if (request.accessToken) {
-            await saveAuthToStorage({
-              accessToken: request.accessToken,
-              refreshToken: request.refreshToken,
-              expiresAt: request.expiresAt,
-              user: request.user,
-            })
-            // Refresh context menu with new auth state
+
+    const handle = async () => {
+      console.log("External message from:", sender.origin, "type:", request?.type)
+      try {
+        switch (request?.type) {
+          case "AUTH_SYNC":
+            if (request.accessToken) {
+              await saveAuthToStorage({
+                accessToken: request.accessToken,
+                refreshToken: request.refreshToken,
+                expiresAt: request.expiresAt,
+                user: request.user,
+              })
+              await setupContextMenu()
+              sendResponse({ success: true, message: "Auth synced to extension" })
+            } else {
+              sendResponse({ success: false, error: "No access token provided" })
+            }
+            break
+
+          case "AUTH_LOGOUT":
+            await clearAuthStorage()
+            foldersCache = []
+            foldersCacheTimestamp = 0
             await setupContextMenu()
-            sendResponse({ success: true, message: "Auth synced to extension" })
-          } else {
-            sendResponse({ success: false, error: "No access token provided" })
-          }
-          break
-          
-        case "AUTH_LOGOUT":
-          // User logged out from web app
-          await clearAuthStorage()
-          foldersCache = []
-          foldersCacheTimestamp = 0
-          await setupContextMenu()
-          sendResponse({ success: true, message: "Logged out from extension" })
-          break
-          
-        case "PING":
-          // Web app checking if extension is installed
-          sendResponse({ 
-            success: true, 
-            installed: true,
-            extensionId: chrome.runtime.id,
-            version: chrome.runtime.getManifest().version 
-          })
-          break
-          
-        case "CHECK_AUTH":
-          // Web app checking if extension has auth
-          const hasAuth = await isAuthenticated()
-          sendResponse({ success: true, authenticated: hasAuth })
-          break
-          
-        default:
-          sendResponse({ success: false, error: "Unknown message type" })
+            sendResponse({ success: true, message: "Logged out from extension" })
+            break
+
+          case "PING":
+            sendResponse({
+              success: true,
+              installed: true,
+              extensionId: chrome.runtime.id,
+              version: chrome.runtime.getManifest().version,
+            })
+            break
+
+          case "CHECK_AUTH":
+            const hasAuth = await isAuthenticated()
+            sendResponse({ success: true, authenticated: hasAuth })
+            break
+
+          default:
+            sendResponse({ success: false, error: "Unknown message type" })
+        }
+      } catch (error) {
+        console.error("Error handling external message:", error)
+        sendResponse({
+          success: false,
+          error: error instanceof Error ? error.message : "Unknown error",
+        })
       }
-    } catch (error) {
-      console.error("Error handling external message:", error)
-      sendResponse({ 
-        success: false, 
-        error: error instanceof Error ? error.message : "Unknown error" 
-      })
     }
-    
-    return true // Keep channel open for async response
+
+    handle()
+    return true
   }
 )
 
@@ -113,57 +113,60 @@ chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
 })
 
 /**
- * Setup context menu based on authentication state
+ * Setup context menu based on authentication state.
+ * Serialized so concurrent calls (e.g. from multiple tab updates) don't create duplicate menu ids.
  */
-async function setupContextMenu() {
-  // Remove all existing context menus
-  await chrome.contextMenus.removeAll()
-  
-  const authenticated = await isAuthenticated()
-  console.log("Setting up context menu, authenticated:", authenticated)
-  
-  if (!authenticated) {
-    // Show login option if not authenticated
-    chrome.contextMenus.create({
-      id: CONTEXT_MENU_LOGIN,
-      title: "Login to Recall",
-      contexts: ["page", "link"],
-      documentUrlPatterns: ["https://www.youtube.com/*"],
-    })
-    return
-  }
-  
-  // User is authenticated - fetch folders and create menu
-  try {
-    const token = await getSessionFromStorage()
-    if (!token) {
-      throw new Error("No session token")
-    }
+function setupContextMenu() {
+  setupContextMenuPromise = setupContextMenuPromise.then(async () => {
+    // Remove all existing context menus
+    await chrome.contextMenus.removeAll()
     
-    // Check cache first
-    const now = Date.now()
-    if (foldersCache.length > 0 && now - foldersCacheTimestamp < CACHE_DURATION) {
-      createFolderContextMenu(foldersCache)
+    const authenticated = await isAuthenticated()
+    console.log("Setting up context menu, authenticated:", authenticated)
+    
+    if (!authenticated) {
+      // Show login option if not authenticated
+      chrome.contextMenus.create({
+        id: CONTEXT_MENU_LOGIN,
+        title: "Login to Recall",
+        contexts: ["page", "link"],
+        documentUrlPatterns: ["https://www.youtube.com/*"],
+      })
       return
     }
     
-    // Fetch fresh folders
-    const folders = await fetchFolders(token)
-    foldersCache = folders
-    foldersCacheTimestamp = now
-    
-    createFolderContextMenu(folders)
-  } catch (error) {
-    console.error("Error setting up context menu:", error)
-    
-    // Fallback - show login option
-    chrome.contextMenus.create({
-      id: CONTEXT_MENU_LOGIN,
-      title: "Login to Recall",
-      contexts: ["page", "link"],
-      documentUrlPatterns: ["https://www.youtube.com/*"],
-    })
-  }
+    // User is authenticated - fetch folders and create menu
+    try {
+      const token = await getSessionFromStorage()
+      if (!token) {
+        throw new Error("No session token")
+      }
+      
+      // Check cache first
+      const now = Date.now()
+      if (foldersCache.length > 0 && now - foldersCacheTimestamp < CACHE_DURATION) {
+        createFolderContextMenu(foldersCache)
+        return
+      }
+      
+      // Fetch fresh folders
+      const folders = await fetchFolders(token)
+      foldersCache = folders
+      foldersCacheTimestamp = now
+      
+      createFolderContextMenu(folders)
+    } catch (error) {
+      console.error("Error setting up context menu:", error)
+      
+      // Fallback - show login option
+      chrome.contextMenus.create({
+        id: CONTEXT_MENU_LOGIN,
+        title: "Login to Recall",
+        contexts: ["page", "link"],
+        documentUrlPatterns: ["https://www.youtube.com/*"],
+      })
+    }
+  })
 }
 
 /**
@@ -311,7 +314,7 @@ async function handleAddToFolder(folderId: string, tab?: chrome.tabs.Tab) {
 function showNotification(title: string, message: string) {
   chrome.notifications.create({
     type: "basic",
-    iconUrl: chrome.runtime.getURL("assets/icons/icon-128.svg"),
+    iconUrl: chrome.runtime.getURL("assets/icons/icon-128.png"),
     title: title,
     message: message,
     priority: 1,

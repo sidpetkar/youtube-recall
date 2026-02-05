@@ -1,4 +1,5 @@
 import { extractYouTubeVideoId } from "@shared/utils/youtube"
+import folderIconUrl from "../../assets/icons/folder-icon.png?url"
 
 const APP_URL = import.meta.env.VITE_APP_URL || "https://ytrecall.online"
 
@@ -233,19 +234,24 @@ function renderFolders(modal: HTMLElement, folders: any[]) {
     `
     return
   }
-  
-  body.innerHTML = folders
-    .map(
-      (folder) => `
-      <button class="recall-folder-item" data-folder-id="${folder.id}">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-        </svg>
-        <span>${folder.name}${folder.is_default ? " (default)" : ""}</span>
-      </button>
-    `
-    )
-    .join("")
+
+  body.innerHTML = `
+    <div class="recall-modal-folders">
+      ${folders
+        .map(
+          (folder) => `
+        <button class="recall-folder-item" data-folder-id="${folder.id}">
+          <img class="recall-folder-icon" src="${folderIconUrl}" alt="" />
+          <div class="recall-folder-text">
+            <span class="recall-folder-name">${folder.name}${folder.is_default ? " (default)" : ""}</span>
+            ${typeof folder.video_count === "number" ? `<span class="recall-folder-count">${folder.video_count} video${folder.video_count !== 1 ? "s" : ""}</span>` : ""}
+          </div>
+        </button>
+      `
+        )
+        .join("")}
+    </div>
+  `
   
   // Add click handlers
   body.querySelectorAll(".recall-folder-item").forEach((item) => {

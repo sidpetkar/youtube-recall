@@ -1,14 +1,27 @@
-# Icon Placeholder
+# Extension Icons
 
-This folder should contain extension icons in the following sizes:
-- icon-16.png (16x16)
-- icon-32.png (32x32)
-- icon-48.png (48x48)
-- icon-128.png (128x128)
+This folder contains the extension icons (16, 32, 48, 128 px) used by the manifest, toolbar, popup, and notifications.
 
-## Generating Icons
+## Regenerating from source
 
-You can use any of these methods:
+Source asset: **`recal-icon-128.png`** in the repo root (one level up from `recall-chrome-ext`).
+
+From `recall-chrome-ext` run:
+
+```bash
+npm run icons
+```
+
+This uses `scripts/generate-icons-from-source.js` (sharp) to resize the source to 16, 32, 48, and 128 and overwrite the PNGs here.
+
+## Sizes
+
+- icon-16.png (16×16) – toolbar
+- icon-32.png (32×32)
+- icon-48.png (48×48) – extension management
+- icon-128.png (128×128) – store listing, popup, notifications
+
+## Other methods
 
 1. **Online Icon Generators**:
    - https://favicon.io/

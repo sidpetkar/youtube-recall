@@ -9,6 +9,12 @@ export default defineConfig({
     react(),
     crx({ manifest: manifest as any }),
   ],
+  server: {
+    cors: {
+      origin: [/chrome-extension:\/\//],
+      credentials: true,
+    },
+  },
   resolve: {
     alias: {
       "@": path.resolve(__dirname, "./src"),
@@ -18,7 +24,7 @@ export default defineConfig({
   define: {
     "process.env.VITE_SUPABASE_URL": JSON.stringify(process.env.VITE_SUPABASE_URL),
     "process.env.VITE_SUPABASE_ANON_KEY": JSON.stringify(process.env.VITE_SUPABASE_ANON_KEY),
-    "process.env.VITE_APP_URL": JSON.stringify(process.env.VITE_APP_URL || "http://localhost:3000"),
+    "process.env.VITE_APP_URL": JSON.stringify(process.env.VITE_APP_URL || "https://ytrecall.online"),
   },
   build: {
     outDir: "dist",

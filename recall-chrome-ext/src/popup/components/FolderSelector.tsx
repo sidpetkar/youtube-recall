@@ -1,7 +1,8 @@
 import React, { useState } from "react"
 import { useQuery, useMutation } from "@tanstack/react-query"
-import { Folder as FolderIcon, Check, Loader2, AlertCircle } from "lucide-react"
+import { Check, Loader2, AlertCircle } from "lucide-react"
 import { getSessionFromCookies } from "../../lib/supabase"
+import folderIconUrl from "../../../assets/icons/folder-icon.png?url"
 import { fetchFolders, addVideoByUrl } from "../../lib/api"
 import { LoadingSpinner } from "./LoadingSpinner"
 import type { Folder } from "@shared/types/database"
@@ -58,7 +59,7 @@ export function FolderSelector({ videoUrl }: FolderSelectorProps) {
 
   if (isLoading) {
     return (
-      <div className="w-80 p-6">
+      <div className="w-[420px] min-h-[320px] flex items-center justify-center p-4">
         <LoadingSpinner />
       </div>
     )
@@ -66,76 +67,80 @@ export function FolderSelector({ videoUrl }: FolderSelectorProps) {
 
   if (error) {
     return (
-      <div className="w-80 p-6">
-        <div className="flex items-center gap-2 text-destructive">
-          <AlertCircle className="w-5 h-5" />
-          <p className="text-sm">Failed to load folders</p>
+      <div className="w-[420px] p-4">
+        <div className="rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 flex items-center gap-2 text-destructive">
+          <AlertCircle className="w-5 h-5 shrink-0" />
+          <p className="text-sm font-medium">Failed to load folders</p>
         </div>
       </div>
     )
   }
 
   return (
-    <div className="w-80">
-      <div className="p-4 border-b">
-        <h2 className="font-semibold">Save to Folder</h2>
-        <p className="text-xs text-muted-foreground mt-1">
+    <div className="w-[420px] min-h-[320px] flex flex-col p-4">
+      <div className="pb-3">
+        <h2 className="text-lg font-bold tracking-tight">Save to Folder</h2>
+        <p className="text-sm text-muted-foreground mt-1">
           Choose a folder for this video
         </p>
       </div>
 
       {successMessage && (
-        <div className="p-4 bg-green-50 border-b border-green-200">
-          <div className="flex items-center gap-2 text-green-700">
-            <Check className="w-4 h-4" />
+        <div className="mb-2 rounded-lg bg-emerald-50 dark:bg-emerald-950/30 border border-emerald-200 dark:border-emerald-800 px-3 py-2">
+          <div className="flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
+            <Check className="w-4 h-4 shrink-0" />
             <p className="text-sm font-medium">{successMessage}</p>
           </div>
         </div>
       )}
 
       {errorMessage && (
-        <div className="p-4 bg-red-50 border-b border-red-200">
-          <div className="flex items-center gap-2 text-red-700">
-            <AlertCircle className="w-4 h-4" />
+        <div className="mb-2 rounded-lg bg-destructive/10 border border-destructive/20 px-3 py-2">
+          <div className="flex items-center gap-2 text-destructive">
+            <AlertCircle className="w-4 h-4 shrink-0" />
             <p className="text-sm">{errorMessage}</p>
           </div>
         </div>
       )}
 
-      <div className="max-h-96 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto min-h-0 max-h-[320px]">
         {folders && folders.length > 0 ? (
-          <div className="divide-y">
+          <div className="space-y-2 pr-1">
             {folders.map((folder) => (
               <button
                 key={folder.id}
                 onClick={() => handleFolderClick(folder.id)}
                 disabled={addVideoMutation.isPending}
-                className="w-full px-4 py-3 flex items-center gap-3 hover:bg-accent transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left"
+                className="w-full rounded-lg border border-border bg-white px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left dark:bg-white dark:hover:bg-gray-50"
               >
-                <FolderIcon className="w-5 h-5 text-muted-foreground flex-shrink-0" />
+                <img
+                  src={folderIconUrl}
+                  alt=""
+                  className="w-5 h-5 object-contain flex-shrink-0"
+                />
                 <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">
+                  <p className="font-semibold text-sm truncate">
                     {folder.name}
                     {folder.is_default && (
-                      <span className="text-xs text-muted-foreground ml-2">
+                      <span className="text-xs text-muted-foreground font-normal ml-1.5">
                         (default)
                       </span>
                     )}
                   </p>
                   {"video_count" in folder && folder.video_count !== undefined && (
-                    <p className="text-xs text-muted-foreground">
+                    <p className="text-xs text-muted-foreground mt-0.5">
                       {folder.video_count} video{folder.video_count !== 1 ? "s" : ""}
                     </p>
                   )}
                 </div>
                 {addVideoMutation.isPending && selectedFolderId === folder.id && (
-                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <Loader2 className="w-4 h-4 animate-spin shrink-0" />
                 )}
               </button>
             ))}
           </div>
         ) : (
-          <div className="p-6 text-center text-muted-foreground">
+          <div className="py-8 text-center text-muted-foreground">
             <p className="text-sm">No folders found</p>
           </div>
         )}
