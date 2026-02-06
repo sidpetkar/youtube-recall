@@ -59,14 +59,14 @@ Value: (copy from your recall-react-app/.env.local file)
 #### Variable 3: NEXTAUTH_URL
 ```
 Name: NEXTAUTH_URL
-Value: https://ytrecall.online
+Value: https://recallmeapp.xyz
 (or your custom domain / Vercel URL - update after adding domain in Vercel)
 ```
 
 #### Variable 4: NEXT_PUBLIC_APP_URL
 ```
 Name: NEXT_PUBLIC_APP_URL
-Value: https://ytrecall.online
+Value: https://recallmeapp.xyz
 (same as NEXTAUTH_URL)
 ```
 
@@ -111,7 +111,7 @@ Value: (leave empty for now)
 ### Step 6: Copy Your Production URL
 
 Your app will be at your custom domain or Vercel URL, e.g.:
-- `https://ytrecall.online`
+- `https://recallmeapp.xyz`
 - or `https://your-project.vercel.app`
 
 **Copy this URL** - you'll need it for the next steps!

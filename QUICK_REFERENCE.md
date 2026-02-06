@@ -39,15 +39,15 @@ git push -u origin main
 **Via https://console.cloud.google.com/apis/credentials:**
 - Edit OAuth Client ID
 - Add redirect URIs:
-  - `https://ytrecall.online/api/auth/callback`
-  - `https://ytrecall.online/api/youtube/callback`
+  - `https://recallmeapp.xyz/api/auth/callback`
+  - `https://recallmeapp.xyz/api/youtube/callback`
 - Save
 
 ### 4️⃣ Update Supabase (3 min)
 **Via https://supabase.com/dashboard:**
 - Settings → API → URL Configuration
-- Site URL: `https://ytrecall.online`
-- Redirect URLs: `https://ytrecall.online/**`
+- Site URL: `https://recallmeapp.xyz`
+- Redirect URLs: `https://recallmeapp.xyz/**`
 - Save
 
 ### 5️⃣ Test Web App (5 min)
@@ -59,7 +59,7 @@ git push -u origin main
 ### 6️⃣ Build Extension (5 min)
 ```powershell
 cd recall-chrome-ext
-# Edit .env.local: Set VITE_APP_URL=https://ytrecall.online
+# Edit .env.local: Set VITE_APP_URL=https://recallmeapp.xyz
 npm run build
 ```
 Load in Chrome: `chrome://extensions/` → Load unpacked → Select `dist/`
@@ -78,8 +78,8 @@ Load in Chrome: `chrome://extensions/` → Load unpacked → Select `dist/`
 # Copy values from your local recall-react-app/.env.local file
 GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=GOCSPX-your_google_client_secret
-NEXTAUTH_URL=https://ytrecall.online
-NEXT_PUBLIC_APP_URL=https://ytrecall.online
+NEXTAUTH_URL=https://recallmeapp.xyz
+NEXT_PUBLIC_APP_URL=https://recallmeapp.xyz
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_supabase_service_role_key
@@ -92,7 +92,7 @@ NEXT_PUBLIC_CHROME_EXTENSION_ID=(optional)
 # Copy values from your local recall-chrome-ext/.env.local file
 VITE_SUPABASE_URL=https://your-project-id.supabase.co
 VITE_SUPABASE_ANON_KEY=your_supabase_anon_key
-VITE_APP_URL=https://ytrecall.online
+VITE_APP_URL=https://recallmeapp.xyz
 ```
 
 ---

@@ -137,8 +137,8 @@ GOOGLE_CLIENT_ID=your_google_client_id.apps.googleusercontent.com
 GOOGLE_CLIENT_SECRET=GOCSPX-your_google_client_secret
 
 # Application URLs (UPDATE THESE!)
-NEXTAUTH_URL=https://ytrecall.online
-NEXT_PUBLIC_APP_URL=https://ytrecall.online
+NEXTAUTH_URL=https://recallmeapp.xyz
+NEXT_PUBLIC_APP_URL=https://recallmeapp.xyz
 
 # Supabase
 NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
@@ -158,7 +158,7 @@ NEXT_PUBLIC_CHROME_EXTENSION_ID=
 
 1. Click **"Deploy"**
 2. Wait for deployment to complete (~2-3 minutes)
-3. Note your production URL: `https://ytrecall.online`
+3. Note your production URL: `https://recallmeapp.xyz`
 
 ---
 
@@ -171,8 +171,8 @@ NEXT_PUBLIC_CHROME_EXTENSION_ID=
 3. Click **Edit**
 4. Under **"Authorized redirect URIs"**, add:
    ```
-   https://ytrecall.online/api/auth/callback
-   https://ytrecall.online/api/youtube/callback
+   https://recallmeapp.xyz/api/auth/callback
+   https://recallmeapp.xyz/api/youtube/callback
    ```
 5. Keep the localhost URLs for development:
    ```
@@ -200,10 +200,10 @@ NEXT_PUBLIC_CHROME_EXTENSION_ID=
 2. Select your project: `mpltdhgnmdcincgvkcav`
 3. Go to **Settings** → **API**
 4. Scroll to **"URL Configuration"**
-5. Add to **"Site URL"**: `https://ytrecall.online`
+5. Add to **"Site URL"**: `https://recallmeapp.xyz`
 6. Add to **"Redirect URLs"**:
    ```
-   https://ytrecall.online/**
+   https://recallmeapp.xyz/**
    http://localhost:3000/**
    ```
 
@@ -213,7 +213,7 @@ NEXT_PUBLIC_CHROME_EXTENSION_ID=
 2. Under **"CORS"**, ensure your production URL is allowed
 3. Usually `*` is fine for public apps, but you can restrict to:
    ```
-   https://ytrecall.online
+   https://recallmeapp.xyz
    http://localhost:3000
    ```
 
@@ -223,7 +223,7 @@ NEXT_PUBLIC_CHROME_EXTENSION_ID=
 
 ### Step 5.1: Test Authentication Flow
 
-1. Visit `https://ytrecall.online`
+1. Visit `https://recallmeapp.xyz`
 2. Click **"Sign in with Google"**
 3. Complete OAuth flow
 4. Verify you're redirected back and logged in
@@ -257,7 +257,7 @@ VITE_SUPABASE_URL=https://mpltdhgnmdcincgvkcav.supabase.co
 VITE_SUPABASE_ANON_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1wbHRkaGdubWRjaW5jZ3ZrY2F2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzMzEwNzIsImV4cCI6MjA4NDkwNzA3Mn0.RcokPCwM-8gx4eJ157_7oucQVaVWejoVVnFVJUehoUA
 
 # UPDATE THIS to your production URL
-VITE_APP_URL=https://ytrecall.online
+VITE_APP_URL=https://recallmeapp.xyz
 ```
 
 ### Step 6.2: Update Manifest Version
@@ -522,8 +522,8 @@ npm run build
 ```bash
 GOOGLE_CLIENT_ID=your_client_id
 GOOGLE_CLIENT_SECRET=your_client_secret
-NEXTAUTH_URL=https://ytrecall.online
-NEXT_PUBLIC_APP_URL=https://ytrecall.online
+NEXTAUTH_URL=https://recallmeapp.xyz
+NEXT_PUBLIC_APP_URL=https://recallmeapp.xyz
 NEXT_PUBLIC_SUPABASE_URL=https://mpltdhgnmdcincgvkcav.supabase.co
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key
 SUPABASE_SERVICE_ROLE_KEY=your_service_role_key
@@ -535,7 +535,7 @@ NEXT_PUBLIC_CHROME_EXTENSION_ID=your_extension_id (optional)
 ```bash
 VITE_SUPABASE_URL=https://mpltdhgnmdcincgvkcav.supabase.co
 VITE_SUPABASE_ANON_KEY=your_anon_key
-VITE_APP_URL=https://ytrecall.online
+VITE_APP_URL=https://recallmeapp.xyz
 ```
 
 ---

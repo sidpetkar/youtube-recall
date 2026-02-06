@@ -44,7 +44,7 @@ git push origin main
    - Click the refresh icon
 
 2. **Test Auth Sync:**
-   - Go to `https://ytrecall.online/auth`
+   - Go to `https://recallmeapp.xyz/auth`
    - Sign in with Google
    - You should see "Extension Status" and "Sync to Extension" button
    - Click "Sync to Extension"

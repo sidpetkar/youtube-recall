@@ -22,7 +22,7 @@ Set these in **Vercel** → your project → **Settings** → **Environment Vari
 
 | Variable | Production value | Notes |
 |----------|------------------|--------|
-| `NEXT_PUBLIC_APP_URL` | `https://www.ytrecall.online` | Or `https://ytrecall.online` if that’s your canonical URL |
+| `NEXT_PUBLIC_APP_URL` | `https://www.recallmeapp.xyz` | Or `https://recallmeapp.xyz` if that’s your canonical URL |
 | `NEXTAUTH_URL` | Same as `NEXT_PUBLIC_APP_URL` | Must match or OAuth redirects break |
 | `NEXT_PUBLIC_CHROME_EXTENSION_ID` | **Chrome Web Store extension ID** | See Part 4 – set **after** first publish or when updating |
 | `NEXT_PUBLIC_SUPABASE_URL` | Your Supabase project URL | Same as dev if same project |
@@ -58,14 +58,14 @@ npm run build
 
 Ensure the build uses **production** values:
 
-- **VITE_APP_URL** must be your production web app URL (e.g. `https://www.ytrecall.online` or `https://ytrecall.online`).
+- **VITE_APP_URL** must be your production web app URL (e.g. `https://www.recallmeapp.xyz` or `https://recallmeapp.xyz`).
 - Set via `.env.local` in `recall-chrome-ext/` (not committed). Example:
 
 ```bash
 # recall-chrome-ext/.env.local (do not commit)
 VITE_SUPABASE_URL=https://your-project.supabase.co
 VITE_SUPABASE_ANON_KEY=your_anon_key
-VITE_APP_URL=https://www.ytrecall.online
+VITE_APP_URL=https://www.recallmeapp.xyz
 ```
 
 Then run `npm run build` again. The built extension is in `recall-chrome-ext/dist/`.
@@ -79,7 +79,7 @@ Then run `npm run build` again. The built extension is in `recall-chrome-ext/dis
    - **Description**, **Category** (e.g. Productivity), **Language**.
    - **Screenshots** (required): at least one; use 1280x800 or 640x400.
    - **Small tile**: 440x280 px (optional but recommended).
-   - **Privacy**: link to your privacy policy (e.g. `https://www.ytrecall.online/privacy`).
+   - **Privacy**: link to your privacy policy (e.g. `https://www.recallmeapp.xyz/privacy`).
    - **Single purpose**: describe that the extension saves YouTube videos to Recall folders.
 4. Submit for review. Review can take from hours to a few days.
 
@@ -103,9 +103,9 @@ Then run `npm run build` again. The built extension is in `recall-chrome-ext/dis
 
 | What | Where | Value |
 |------|--------|--------|
-| Web app URL | Extension `.env.local`: `VITE_APP_URL` | `https://www.ytrecall.online` (or your prod URL) |
-| Web app URL | Google OAuth “Authorized redirect URIs” | `https://www.ytrecall.online/api/auth/callback` (and `/api/youtube/callback` if used) |
-| Web app URL | Supabase “Redirect URLs” | `https://www.ytrecall.online/**` |
+| Web app URL | Extension `.env.local`: `VITE_APP_URL` | `https://www.recallmeapp.xyz` (or your prod URL) |
+| Web app URL | Google OAuth “Authorized redirect URIs” | `https://www.recallmeapp.xyz/api/auth/callback` (and `/api/youtube/callback` if used) |
+| Web app URL | Supabase “Redirect URLs” | `https://www.recallmeapp.xyz/**` |
 | Extension ID | Vercel: `NEXT_PUBLIC_CHROME_EXTENSION_ID` | **Chrome Web Store** extension ID (same as when users install from store) |
 
 **Important**

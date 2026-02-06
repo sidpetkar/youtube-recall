@@ -35,8 +35,8 @@ chrome.runtime.onMessageExternal.addListener(
       "http://localhost:3000",
       "http://127.0.0.1:3000",
       "https://localhost:3000",
-      "https://ytrecall.online",
-      "https://www.ytrecall.online",
+      "https://recallmeapp.xyz",
+      "https://www.recallmeapp.xyz",
     ]
 
     if (!sender.origin || !allowedOrigins.some(o => sender.origin === o || sender.origin?.startsWith(o.replace(":3000", "")))) {

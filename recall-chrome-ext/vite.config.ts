@@ -24,7 +24,7 @@ export default defineConfig({
   define: {
     "process.env.VITE_SUPABASE_URL": JSON.stringify(process.env.VITE_SUPABASE_URL),
     "process.env.VITE_SUPABASE_ANON_KEY": JSON.stringify(process.env.VITE_SUPABASE_ANON_KEY),
-    "process.env.VITE_APP_URL": JSON.stringify(process.env.VITE_APP_URL || "https://ytrecall.online"),
+    "process.env.VITE_APP_URL": JSON.stringify(process.env.VITE_APP_URL || "https://recallmeapp.xyz"),
   },
   build: {
     outDir: "dist",

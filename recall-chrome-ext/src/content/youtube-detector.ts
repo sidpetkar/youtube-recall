@@ -1,7 +1,7 @@
 import { extractYouTubeVideoId } from "@shared/utils/youtube"
 import folderIconUrl from "../../assets/icons/folder-icon.png?url"
 
-const APP_URL = import.meta.env.VITE_APP_URL || "https://ytrecall.online"
+const APP_URL = import.meta.env.VITE_APP_URL || "https://recallmeapp.xyz"
 
 // Floating/inline button containers
 let floatingButton: HTMLDivElement | null = null
