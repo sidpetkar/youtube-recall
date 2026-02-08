@@ -118,6 +118,7 @@ export function SyncButton() {
     <Button
       variant="outline"
       size="sm"
+      className="h-10 rounded-[8px]"
       onClick={handleSync}
       disabled={syncMutation.isPending}
     >

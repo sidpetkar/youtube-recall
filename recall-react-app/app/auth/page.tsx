@@ -3,9 +3,10 @@
 import * as React from "react"
 import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useTheme } from "next-themes"
 import { useIsMobile } from "@/hooks/use-mobile"
+import { RecallLogo } from "@/components/recall-logo"
 
 // Chrome extension types
 declare global {
@@ -29,6 +30,7 @@ export default function AuthPage() {
   const [syncStatus, setSyncStatus] = React.useState<string>("")
   const supabase = createClient()
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { setTheme } = useTheme()
   const extensionId = process.env.NEXT_PUBLIC_CHROME_EXTENSION_ID || ""
   const isMobile = useIsMobile()
@@ -131,11 +133,11 @@ export default function AuthPage() {
 
   const handleSignIn = async () => {
     setLoading(true)
-    // Use exact redirect URL (no query) so Supabase allowlist matches and doesn't fall back to Site URL (prod)
+    const next = searchParams.get("next") || "/api/youtube/auth"
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/api/auth/callback`,
+        redirectTo: `${window.location.origin}/api/auth/callback?next=${encodeURIComponent(next)}`,
         queryParams: {
           access_type: "offline",
           prompt: "consent",
@@ -156,12 +158,9 @@ export default function AuthPage() {
       <div className="flex min-h-screen items-center justify-center bg-[#f7f7f3] p-4">
         <div className="w-full max-w-md space-y-8 text-center">
           <div className="space-y-2">
-            <img
-              src="/recall-svg-logo.svg"
-              alt="Recall"
-              width={145}
-              height={56}
+            <RecallLogo
               className="mx-auto h-14 w-auto max-h-14 object-contain object-center"
+              aria-label="Recall"
             />
             <h1 className="text-2xl font-bold tracking-tight">Welcome back!</h1>
             <p className="text-muted-foreground">{user.email}</p>
@@ -224,29 +223,18 @@ export default function AuthPage() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-[#f7f7f3] p-4">
-      <div className="w-full max-w-md space-y-8 text-center">
+      <div className="w-full max-w-md space-y-6 text-center rounded-2xl border border-border bg-white p-6 shadow-lg md:p-8">
         <div className="space-y-2">
-          <img
-            src="/recall-svg-logo.svg"
-            alt="Recall"
-            width={145}
-            height={56}
-            className="mx-auto h-14 w-auto max-h-14 object-contain object-center"
+          <RecallLogo
+            className="mx-auto h-12 w-auto object-contain"
+            aria-label="Recall"
           />
-          <p className="text-lg text-muted-foreground">
-            Organize your liked videos with folders and save from YouTube with the Chrome extension.
+          <p className="text-sm text-muted-foreground">
+            Sign in with Google to continue.
           </p>
         </div>
 
-        <div className={isMobile ? "space-y-4" : "space-y-4 rounded-2xl border border-border bg-white p-8 shadow-lg"}>
-          <div className="space-y-2">
-            <h2 className="text-xl font-semibold">Get started</h2>
-            <p className="text-sm text-muted-foreground">
-              Sign in with Google to access your liked videos and sync with the extension.
-            </p>
-          </div>
-
-          <Button
+        <Button
             size="lg"
             className="w-full"
             onClick={handleSignIn}
@@ -260,15 +248,18 @@ export default function AuthPage() {
               height={20}
             />
             {loading ? "Connecting…" : "Continue with Google"}
-          </Button>
+        </Button>
 
-          <p className="pt-4 text-center text-xs text-muted-foreground">
-            By signing in, you agree to our{" "}
-            <a href="/terms" className="underline hover:text-foreground transition-colors">Terms of Service</a>
-            {" "}and{" "}
-            <a href="/privacy" className="underline hover:text-foreground transition-colors">Privacy Policy</a>.
-          </p>
-        </div>
+        <p className="text-sm text-muted-foreground">
+          <a href="/" className="underline hover:text-foreground">Back to home</a>
+        </p>
+
+        <p className="pt-2 text-center text-xs text-muted-foreground">
+          By signing in, you agree to our{" "}
+          <a href="/terms" className="underline hover:text-foreground transition-colors">Terms of Service</a>
+          {" "}and{" "}
+          <a href="/privacy" className="underline hover:text-foreground transition-colors">Privacy Policy</a>.
+        </p>
       </div>
     </div>
   )

@@ -1,6 +1,5 @@
 // Tag color constants
 
-export const DEFAULT_FOLDER_NAME = "Inbox"
 export const DEFAULT_TAG_COLOR = "#6366f1" // Indigo
 
 export const TAG_COLORS = [

@@ -98,4 +98,19 @@
   [draggable="true"]:focus {
     outline: none;
   }
+
+  /* Tiptap / ProseMirror Notion-like editor: theme-aware and placeholder */
+  .ProseMirror {
+    @apply text-foreground;
+  }
+  .ProseMirror p.is-editor-empty:first-child::before {
+    content: attr(data-placeholder);
+    @apply text-muted-foreground float-left h-0 pointer-events-none;
+  }
+  .ProseMirror:focus {
+    outline: none;
+  }
+  .dark .ProseMirror {
+    @apply text-foreground;
+  }
 }

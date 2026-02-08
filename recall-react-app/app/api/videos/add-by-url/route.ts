@@ -8,12 +8,12 @@ import { extractYouTubeVideoId } from "@shared/utils/youtube"
 import type { AddVideoByUrlRequest, AddVideoByUrlResponse } from "@shared/types/api"
 import type { Video, Tag } from "@shared/types/database"
 
-/** Resolve target folder id: use provided folderId if valid, else default Inbox. */
+/** Resolve target folder id: use provided folderId if valid; otherwise null (video goes to Liked only). */
 async function resolveTargetFolderId(
   supabase: Awaited<ReturnType<typeof createClient>>,
   userId: string,
   folderId?: string
-): Promise<string> {
+): Promise<string | null> {
   if (folderId) {
     const { data: folder } = await supabase
       .from("folders")
@@ -24,14 +24,7 @@ async function resolveTargetFolderId(
     if (folder) return folder.id
     throw new Error("Folder not found or access denied")
   }
-  const { data: inboxFolder } = await supabase
-    .from("folders")
-    .select("id")
-    .eq("user_id", userId)
-    .eq("is_default", true)
-    .single()
-  if (!inboxFolder) throw new Error("Default folder not found")
-  return inboxFolder.id
+  return null
 }
 
 /**
@@ -110,7 +103,7 @@ export async function POST(request: NextRequest) {
           { status }
         )
       }
-      const updatePayload: { folder_id: string; resume_at_seconds?: number | null } = { folder_id: targetFolderId }
+      const updatePayload: { folder_id: string | null; resume_at_seconds?: number | null } = { folder_id: targetFolderId }
       if (resume_at_seconds !== undefined && resume_at_seconds !== null) {
         updatePayload.resume_at_seconds = Math.max(0, Math.floor(Number(resume_at_seconds)))
       }
@@ -156,8 +149,8 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // New video: resolve target folder (provided folder or default Inbox)
-    let targetFolderId: string
+    // New video: resolve target folder (provided folder or null = Liked only)
+    let targetFolderId: string | null
     try {
       targetFolderId = await resolveTargetFolderId(supabase, user.id, folderId)
     } catch (e: any) {

@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { Card, CardContent } from "@/components/ui/card"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { cn } from "@/lib/utils"
@@ -32,12 +33,13 @@ export function VideoCard({
   resumeAtSeconds,
   className,
 }: VideoCardProps) {
+  const router = useRouter()
   const handleClick = () => {
-    const url = new URL(`https://www.youtube.com/watch?v=${videoId}`)
-    if (resumeAtSeconds != null && resumeAtSeconds > 0) {
-      url.searchParams.set("t", String(Math.floor(resumeAtSeconds)))
-    }
-    window.open(url.toString(), "_blank")
+    const query =
+      resumeAtSeconds != null && resumeAtSeconds > 0
+        ? `?t=${Math.floor(resumeAtSeconds)}`
+        : ""
+    router.push(`/watch/${videoId}${query}`)
   }
 
   return (
@@ -81,11 +83,6 @@ export function VideoCard({
               <p className="mt-1 text-xs text-muted-foreground line-clamp-1">
                 {channelName}
               </p>
-              {publishedAt && (
-                <p className="mt-0.5 text-xs text-muted-foreground">
-                  {publishedAt}
-                </p>
-              )}
             </div>
           </div>
         </div>

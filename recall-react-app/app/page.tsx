@@ -3,6 +3,7 @@
 import * as React from "react"
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { RecallLogo } from "@/components/recall-logo"
 
 /**
  * Public landing page at / — visible without login.
@@ -14,11 +15,7 @@ export default function LandingPage() {
       {/* Glass morphic header */}
       <header className="sticky top-0 z-10 border-b border-white/20 bg-white/60 backdrop-blur-xl supports-[backdrop-filter]:bg-white/50 dark:bg-background/40 dark:backdrop-blur-xl">
         <div className="container flex h-14 items-center justify-between">
-          <img
-            src="/recall-svg-logo.svg"
-            alt="Recall"
-            className="h-9 w-auto object-contain"
-          />
+          <RecallLogo className="h-9 w-auto" aria-label="Recall" />
           <Link href="/auth">
             <Button variant="default" size="sm">
               Sign in
@@ -32,11 +29,7 @@ export default function LandingPage() {
           {/* Hero: Recall logo, headline (slipping behind graphic), large graphic */}
           <section className="space-y-4">
             <div className="flex justify-center">
-              <img
-                src="/recall-svg-logo.svg"
-                alt="Recall"
-                className="h-14 w-auto object-contain md:h-16"
-              />
+              <RecallLogo className="h-14 w-auto object-contain md:h-16" aria-label="Recall" />
             </div>
             <h1
               className="text-4xl font-bold tracking-tight text-center md:text-5xl lg:text-6xl pb-2"

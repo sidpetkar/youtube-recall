@@ -211,7 +211,7 @@ export function FolderList({ selectedFolderId, onSelectFolder }: FolderListProps
       await deleteFolderMutation.mutateAsync(deletingFolderId)
       toast({
         title: "Folder deleted",
-        description: "The folder and its videos have been moved to Inbox",
+        description: "The folder and its videos have been moved to Liked Videos",
       })
       setDeletingFolderId(null)
       
@@ -345,7 +345,7 @@ export function FolderList({ selectedFolderId, onSelectFolder }: FolderListProps
           <AlertDialogHeader>
             <AlertDialogTitle>Are you sure?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will delete the folder. All videos in this folder will be moved to your Inbox.
+              This will delete the folder. All videos in this folder will be moved to Liked Videos.
               This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>

@@ -26,20 +26,20 @@ export function FolderSelector({ videoUrl }: FolderSelectorProps) {
     },
   })
 
-  // Add video mutation
+  // Add video mutation (folderId undefined = Liked Videos only)
   const addVideoMutation = useMutation({
-    mutationFn: async (folderId: string) => {
+    mutationFn: async (folderId: string | undefined) => {
       const token = await getSessionFromCookies()
       if (!token) throw new Error("Not authenticated")
       return addVideoByUrl(videoUrl, folderId, token)
     },
     onSuccess: (result, folderId) => {
       if (result.success) {
-        const folder = folders?.find(f => f.id === folderId)
-        setSuccessMessage(`Saved to "${folder?.name || "folder"}"`)
+        const message = folderId
+          ? `Saved to "${folders?.find(f => f.id === folderId)?.name || "folder"}"`
+          : "Saved to Liked Videos"
+        setSuccessMessage(message)
         setErrorMessage(undefined)
-        
-        // Close popup after 1.5 seconds
         setTimeout(() => window.close(), 1500)
       } else {
         setErrorMessage(result.message || result.error || "Failed to save video")
@@ -52,8 +52,8 @@ export function FolderSelector({ videoUrl }: FolderSelectorProps) {
     },
   })
 
-  const handleFolderClick = (folderId: string) => {
-    setSelectedFolderId(folderId)
+  const handleFolderClick = (folderId: string | undefined) => {
+    setSelectedFolderId(folderId ?? "liked")
     addVideoMutation.mutate(folderId)
   }
 
@@ -104,9 +104,29 @@ export function FolderSelector({ videoUrl }: FolderSelectorProps) {
       )}
 
       <div className="flex-1 overflow-y-auto min-h-0 max-h-[320px]">
-        {folders && folders.length > 0 ? (
-          <div className="space-y-2 pr-1">
-            {folders.map((folder) => (
+        <div className="space-y-2 pr-1">
+          {/* Liked Videos (no folder) - always first */}
+          <button
+            onClick={() => handleFolderClick(undefined)}
+            disabled={addVideoMutation.isPending}
+            className="w-full rounded-lg border border-border bg-white px-4 py-3 flex items-center gap-3 hover:bg-gray-50 transition-colors disabled:opacity-50 disabled:cursor-not-allowed text-left dark:bg-white dark:hover:bg-gray-50"
+          >
+            <img
+              src={folderIconUrl}
+              alt=""
+              className="w-5 h-5 object-contain flex-shrink-0"
+            />
+            <div className="flex-1 min-w-0">
+              <p className="font-semibold text-sm truncate">Liked Videos</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Save without a folder</p>
+            </div>
+            {addVideoMutation.isPending && selectedFolderId === "liked" && (
+              <Loader2 className="w-4 h-4 animate-spin shrink-0" />
+            )}
+          </button>
+
+          {folders && folders.length > 0 ? (
+            folders.map((folder) => (
               <button
                 key={folder.id}
                 onClick={() => handleFolderClick(folder.id)}
@@ -119,14 +139,7 @@ export function FolderSelector({ videoUrl }: FolderSelectorProps) {
                   className="w-5 h-5 object-contain flex-shrink-0"
                 />
                 <div className="flex-1 min-w-0">
-                  <p className="font-semibold text-sm truncate">
-                    {folder.name}
-                    {folder.is_default && (
-                      <span className="text-xs text-muted-foreground font-normal ml-1.5">
-                        (default)
-                      </span>
-                    )}
-                  </p>
+                  <p className="font-semibold text-sm truncate">{folder.name}</p>
                   {"video_count" in folder && folder.video_count !== undefined && (
                     <p className="text-xs text-muted-foreground mt-0.5">
                       {folder.video_count} video{folder.video_count !== 1 ? "s" : ""}
@@ -137,12 +150,11 @@ export function FolderSelector({ videoUrl }: FolderSelectorProps) {
                   <Loader2 className="w-4 h-4 animate-spin shrink-0" />
                 )}
               </button>
-            ))}
-          </div>
-        ) : (
-          <div className="py-8 text-center text-muted-foreground">
-            <p className="text-sm">No folders found</p>
-          </div>
+            ))
+          ) : null}
+        </div>
+        {folders && folders.length === 0 && (
+          <p className="text-xs text-muted-foreground mt-2">No other folders yet. Create folders in the app.</p>
         )}
       </div>
     </div>

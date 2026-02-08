@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useRouter } from "next/navigation"
 import { useDraggable } from "@dnd-kit/core"
 import { CSS } from "@dnd-kit/utilities"
 import { Card, CardContent } from "@/components/ui/card"
@@ -30,6 +31,7 @@ export function DraggableVideoListItem({
   likedAt,
   currentFolderId,
 }: DraggableVideoListItemProps) {
+  const router = useRouter()
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
     id: `list-${videoDbId}`,
     data: {
@@ -49,10 +51,9 @@ export function DraggableVideoListItem({
     transform: CSS.Translate.toString(transform),
   }
 
-  const handleClick = (e: React.MouseEvent) => {
-    // Only open if not dragging
+  const handleClick = () => {
     if (!isDragging) {
-      window.open(`https://www.youtube.com/watch?v=${videoId}`, "_blank")
+      router.push(`/watch/${videoId}`)
     }
   }
 

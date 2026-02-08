@@ -16,6 +16,9 @@ export interface Database {
           youtube_refresh_token: string | null
           youtube_connected_at: string | null
           last_sync_at: string | null
+          notion_access_token: string | null
+          notion_workspace_id: string | null
+          notion_connected_at: string | null
           created_at: string
           updated_at: string
         }
@@ -28,6 +31,9 @@ export interface Database {
           youtube_refresh_token?: string | null
           youtube_connected_at?: string | null
           last_sync_at?: string | null
+          notion_access_token?: string | null
+          notion_workspace_id?: string | null
+          notion_connected_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -40,6 +46,9 @@ export interface Database {
           youtube_refresh_token?: string | null
           youtube_connected_at?: string | null
           last_sync_at?: string | null
+          notion_access_token?: string | null
+          notion_workspace_id?: string | null
+          notion_connected_at?: string | null
           created_at?: string
           updated_at?: string
         }
@@ -163,6 +172,26 @@ export interface Database {
         Update: {
           video_id?: string
           tag_id?: string
+          created_at?: string
+        }
+      }
+      notion_pages: {
+        Row: {
+          user_id: string
+          youtube_video_id: string
+          notion_page_id: string
+          created_at: string
+        }
+        Insert: {
+          user_id: string
+          youtube_video_id: string
+          notion_page_id: string
+          created_at?: string
+        }
+        Update: {
+          user_id?: string
+          youtube_video_id?: string
+          notion_page_id?: string
           created_at?: string
         }
       }

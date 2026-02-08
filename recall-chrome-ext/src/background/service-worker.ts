@@ -169,6 +169,9 @@ function setupContextMenu() {
   })
 }
 
+/** Menu id for saving to Liked Videos (no folder) */
+const FOLDER_LIKED_ID = "folder-liked"
+
 /**
  * Create context menu with folder options
  */
@@ -180,13 +183,22 @@ function createFolderContextMenu(folders: Folder[]) {
     contexts: ["page", "link"],
     documentUrlPatterns: ["https://www.youtube.com/*"],
   })
-  
-  // Add folder options
+
+  // First option: save to Liked Videos (no folder)
+  chrome.contextMenus.create({
+    id: FOLDER_LIKED_ID,
+    parentId: CONTEXT_MENU_ROOT,
+    title: "Liked Videos",
+    contexts: ["page", "link"],
+    documentUrlPatterns: ["https://www.youtube.com/*"],
+  })
+
+  // Folder options (no "default" label; default folder removed)
   folders.forEach((folder) => {
     chrome.contextMenus.create({
       id: `folder-${folder.id}`,
       parentId: CONTEXT_MENU_ROOT,
-      title: folder.name + (folder.is_default ? " (default)" : ""),
+      title: folder.name,
       contexts: ["page", "link"],
       documentUrlPatterns: ["https://www.youtube.com/*"],
     })
@@ -227,6 +239,12 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     return
   }
   
+  // Handle Liked Videos (no folder)
+  if (info.menuItemId === FOLDER_LIKED_ID) {
+    await handleAddToFolder(undefined, tab)
+    return
+  }
+
   // Handle folder selection
   if (typeof info.menuItemId === "string" && info.menuItemId.startsWith("folder-")) {
     const folderId = info.menuItemId.replace("folder-", "")
@@ -255,9 +273,9 @@ async function getResumeSecondsFromTab(tabId: number): Promise<number> {
 }
 
 /**
- * Handle adding current video to a folder
+ * Handle adding current video to a folder (or to Liked when folderId is undefined)
  */
-async function handleAddToFolder(folderId: string, tab?: chrome.tabs.Tab) {
+async function handleAddToFolder(folderId: string | undefined, tab?: chrome.tabs.Tab) {
   try {
     const token = await getSessionFromStorage()
     if (!token) {
@@ -278,17 +296,14 @@ async function handleAddToFolder(folderId: string, tab?: chrome.tabs.Tab) {
       if (resumeAtSeconds === 0) resumeAtSeconds = undefined
     }
 
-    // Add video via API
+    // Add video via API (folderId undefined = Liked Videos only)
     const result = await addVideoByUrl(url, folderId, token, resumeAtSeconds)
-    
+
     if (result.success) {
-      const folder = foldersCache.find(f => f.id === folderId)
-      showFeedback(
-        tab?.id,
-        "Video Saved!",
-        `Added to "${folder?.name || "folder"}"`,
-        "success"
-      )
+      const message = folderId
+        ? `Added to "${foldersCache.find(f => f.id === folderId)?.name || "folder"}"`
+        : "Added to Liked Videos"
+      showFeedback(tab?.id, "Video Saved!", message, "success")
     } else {
       showFeedback(
         tab?.id,

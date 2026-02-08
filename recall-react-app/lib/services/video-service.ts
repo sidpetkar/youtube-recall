@@ -440,15 +440,14 @@ export class VideoService {
   }
 
   /**
-   * Delete a folder (only if not default and empty)
+   * Delete a folder. If it has videos, they are moved to Liked (folder_id = null) first.
    */
   static async deleteFolder(folderId: string, userId: string): Promise<void> {
     const supabase = await createClient()
 
-    // Check if folder is default
     const { data: folder } = await supabase
       .from("folders")
-      .select("is_default")
+      .select("id")
       .eq("id", folderId)
       .eq("user_id", userId)
       .single()
@@ -457,18 +456,15 @@ export class VideoService {
       throw new Error("Folder not found")
     }
 
-    if (folder.is_default) {
-      throw new Error("Cannot delete default Inbox folder")
-    }
-
-    // Check if folder has videos
-    const { count } = await supabase
+    // Move all videos in this folder to Liked (folder_id = null)
+    const { error: updateError } = await supabase
       .from("videos")
-      .select("id", { count: "exact", head: true })
+      .update({ folder_id: null })
       .eq("folder_id", folderId)
+      .eq("user_id", userId)
 
-    if (count && count > 0) {
-      throw new Error("Cannot delete folder with videos. Move videos first.")
+    if (updateError) {
+      throw new Error("Failed to move videos out of folder")
     }
 
     // Delete folder

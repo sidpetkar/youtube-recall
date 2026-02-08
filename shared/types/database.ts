@@ -13,6 +13,9 @@ export interface Profile {
   youtube_refresh_token: string | null
   youtube_connected_at: string | null
   last_sync_at: string | null
+  notion_access_token: string | null
+  notion_workspace_id: string | null
+  notion_connected_at: string | null
   created_at: string
   updated_at: string
 }
@@ -81,6 +84,13 @@ export interface FolderWithCount extends Folder {
   video_count?: number
 }
 
+export interface NotionPage {
+  user_id: string
+  youtube_video_id: string
+  notion_page_id: string
+  created_at: string
+}
+
 // ============================================================================
 // INSERT TYPES (for creating new records)
 // ============================================================================
@@ -96,6 +106,8 @@ export type VideoInsert = Omit<Video, "id" | "created_at" | "updated_at">
 export type TagInsert = Omit<Tag, "id" | "created_at">
 
 export type VideoTagInsert = Omit<VideoTag, "created_at">
+
+export type NotionPageInsert = Omit<NotionPage, "created_at"> & { created_at?: string }
 
 // ============================================================================
 // UPDATE TYPES (for updating records)

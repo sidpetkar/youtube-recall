@@ -125,6 +125,7 @@ const SidebarProvider = React.forwardRef<
       <SidebarContext.Provider value={contextValue}>
         <TooltipProvider delayDuration={0}>
           <div
+            data-state={state}
             style={
               {
                 "--sidebar-width": SIDEBAR_WIDTH,
@@ -134,7 +135,9 @@ const SidebarProvider = React.forwardRef<
               } as React.CSSProperties
             }
             className={cn(
-              "group/sidebar-wrapper flex min-h-svh w-full max-w-full overflow-x-hidden has-[[data-sidebar=sidebar]]:lg:pl-[var(--sidebar-width)]",
+              "group/sidebar-wrapper flex min-h-svh w-full max-w-full overflow-x-hidden",
+              "has-[[data-sidebar=sidebar]]:lg:pl-[var(--sidebar-width)]",
+              "has-[[data-sidebar=sidebar]]:lg:data-[state=collapsed]:pl-[var(--sidebar-width-icon)]",
               className
             )}
             ref={ref}
