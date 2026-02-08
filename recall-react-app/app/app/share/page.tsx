@@ -21,7 +21,7 @@ function findYouTubeUrlInText(text: string): string | null {
   return null
 }
 
-export default function ShareTargetPage() {
+function ShareTargetPageContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const supabase = createClient()
@@ -102,5 +102,20 @@ export default function ShareTargetPage() {
         Open Recall
       </Button>
     </div>
+  )
+}
+
+export default function ShareTargetPage() {
+  return (
+    <React.Suspense
+      fallback={
+        <div className="min-h-[40vh] flex flex-col items-center justify-center gap-4 p-6">
+          <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
+          <p className="text-sm text-muted-foreground">Loading…</p>
+        </div>
+      }
+    >
+      <ShareTargetPageContent />
+    </React.Suspense>
   )
 }

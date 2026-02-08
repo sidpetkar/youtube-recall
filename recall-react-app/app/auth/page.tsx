@@ -23,7 +23,7 @@ declare global {
   }
 }
 
-export default function AuthPage() {
+function AuthPageContent() {
   const [loading, setLoading] = React.useState(false)
   const [user, setUser] = React.useState<any>(null)
   const [extensionStatus, setExtensionStatus] = React.useState<string>("checking...")
@@ -262,5 +262,25 @@ export default function AuthPage() {
         </p>
       </div>
     </div>
+  )
+}
+
+function AuthPageFallback() {
+  return (
+    <div className="flex min-h-screen items-center justify-center bg-[#f7f7f3] p-4">
+      <div className="w-full max-w-md space-y-6 text-center rounded-2xl border border-border bg-white p-6 shadow-lg md:p-8">
+        <RecallLogo className="mx-auto h-12 w-auto object-contain" aria-label="Recall" />
+        <p className="text-sm text-muted-foreground">Sign in with Google to continue.</p>
+        <div className="h-10 rounded-md bg-muted animate-pulse" />
+      </div>
+    </div>
+  )
+}
+
+export default function AuthPage() {
+  return (
+    <React.Suspense fallback={<AuthPageFallback />}>
+      <AuthPageContent />
+    </React.Suspense>
   )
 }
