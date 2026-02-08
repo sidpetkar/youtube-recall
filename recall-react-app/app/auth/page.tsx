@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/client"
 import { Button } from "@/components/ui/button"
 import { useRouter } from "next/navigation"
 import { useTheme } from "next-themes"
+import { useIsMobile } from "@/hooks/use-mobile"
 
 // Chrome extension types
 declare global {
@@ -30,6 +31,7 @@ export default function AuthPage() {
   const router = useRouter()
   const { setTheme } = useTheme()
   const extensionId = process.env.NEXT_PUBLIC_CHROME_EXTENSION_ID || ""
+  const isMobile = useIsMobile()
 
   // Auth page always in light mode
   React.useEffect(() => {
@@ -129,10 +131,11 @@ export default function AuthPage() {
 
   const handleSignIn = async () => {
     setLoading(true)
+    // Use exact redirect URL (no query) so Supabase allowlist matches and doesn't fall back to Site URL (prod)
     const { error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/api/auth/callback?next=/api/youtube/auth`,
+        redirectTo: `${window.location.origin}/api/auth/callback`,
         queryParams: {
           access_type: "offline",
           prompt: "consent",
@@ -164,7 +167,7 @@ export default function AuthPage() {
             <p className="text-muted-foreground">{user.email}</p>
           </div>
 
-          <div className="space-y-4 rounded-2xl border border-border bg-white p-8 shadow-lg">
+          <div className={isMobile ? "space-y-4" : "space-y-4 rounded-2xl border border-border bg-white p-8 shadow-lg"}>
             <div className="space-y-2">
               <h2 className="text-xl font-semibold">Chrome Extension Sync</h2>
               <p className="text-sm text-muted-foreground">
@@ -195,7 +198,7 @@ export default function AuthPage() {
             )}
 
             <div className="flex gap-2 pt-4">
-              <Button variant="outline" className="flex-1" onClick={() => router.push("/")}>
+              <Button variant="outline" className="flex-1" onClick={() => router.push("/app")}>
                 Go to App
               </Button>
               <Button 
@@ -235,7 +238,7 @@ export default function AuthPage() {
           </p>
         </div>
 
-        <div className="space-y-4 rounded-2xl border border-border bg-white p-8 shadow-lg">
+        <div className={isMobile ? "space-y-4" : "space-y-4 rounded-2xl border border-border bg-white p-8 shadow-lg"}>
           <div className="space-y-2">
             <h2 className="text-xl font-semibold">Get started</h2>
             <p className="text-sm text-muted-foreground">

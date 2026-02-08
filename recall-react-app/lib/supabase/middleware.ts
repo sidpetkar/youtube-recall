@@ -39,10 +39,13 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  // Protected routes - redirect to home if not authenticated
-  if (!user && request.nextUrl.pathname.startsWith("/dashboard")) {
+  // Protected routes - redirect to auth if not authenticated
+  const pathname = request.nextUrl.pathname
+  const isAppRoute = pathname === "/app" || pathname.startsWith("/app/") ||
+    pathname === "/liked" || pathname.startsWith("/folders/")
+  if (!user && (pathname.startsWith("/dashboard") || isAppRoute)) {
     const url = request.nextUrl.clone()
-    url.pathname = "/"
+    url.pathname = "/auth"
     return NextResponse.redirect(url)
   }
 

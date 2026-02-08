@@ -1,0 +1,29 @@
+{
+  "name": "Recall — YouTube Liked Videos Organizer",
+  "short_name": "Recall",
+  "description": "Organize and manage your liked YouTube videos",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f7f7f3",
+  "theme_color": "#0a0a0a",
+  "icons": [
+    {
+      "src": "/recal-icon-128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/recal-icon-128.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/recal-icon-128.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

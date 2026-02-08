@@ -5,20 +5,21 @@ import { getTokensFromCode } from "@/lib/youtube"
 import { createClient, createAdminClient } from "@/lib/supabase/server"
 
 export async function GET(request: Request) {
-  const { searchParams } = new URL(request.url)
+  const requestUrl = new URL(request.url)
+  const { searchParams } = requestUrl
   const code = searchParams.get("code")
   const error = searchParams.get("error")
 
+  // Use request origin so we redirect back to the same host (localhost vs prod)
+  const baseUrl = requestUrl.origin
+  const redirectBase = baseUrl.replace(/\/$/, "")
+
   if (error) {
-    return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}?error=${error}`
-    )
+    return NextResponse.redirect(`${redirectBase}/auth?error=${error}`)
   }
 
   if (!code) {
-    return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}?error=no_code`
-    )
+    return NextResponse.redirect(`${redirectBase}/auth?error=no_code`)
   }
 
   try {
@@ -27,13 +28,11 @@ export async function GET(request: Request) {
     const { data: { user }, error: userError } = await supabase.auth.getUser()
 
     if (userError || !user) {
-      return NextResponse.redirect(
-        `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}?error=not_authenticated`
-      )
+      return NextResponse.redirect(`${redirectBase}/auth?error=not_authenticated`)
     }
 
-    // Exchange code for tokens
-    const tokens = await getTokensFromCode(code)
+    // Exchange code for tokens (pass baseUrl so redirect_uri matches what we sent to Google)
+    const tokens = await getTokensFromCode(code, baseUrl)
 
     if (!tokens.access_token) {
       throw new Error("No access token received")
@@ -56,9 +55,7 @@ export async function GET(request: Request) {
     }
 
     // Also store in cookies for backward compatibility with existing code
-    const response = NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}?youtube_connected=true`
-    )
+    const response = NextResponse.redirect(`${redirectBase}?youtube_connected=true`)
 
     response.cookies.set("youtube_access_token", tokens.access_token, {
       httpOnly: true,
@@ -77,10 +74,8 @@ export async function GET(request: Request) {
     }
 
     return response
-  } catch (error) {
-    console.error("Error exchanging code for tokens:", error)
-    return NextResponse.redirect(
-      `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}?error=token_exchange_failed`
-    )
+  } catch (err) {
+    console.error("Error exchanging code for tokens:", err)
+    return NextResponse.redirect(`${redirectBase}/auth?error=token_exchange_failed`)
   }
 }

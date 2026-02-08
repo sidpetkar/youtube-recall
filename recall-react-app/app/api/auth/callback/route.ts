@@ -6,7 +6,8 @@ import { NextResponse } from "next/server"
 export async function GET(request: Request) {
   const { searchParams, origin } = new URL(request.url)
   const code = searchParams.get("code")
-  const next = searchParams.get("next") ?? "/"
+  // Default to YouTube auth for first-time sign-in (redirectTo has no query so Supabase allowlist matches)
+  const next = searchParams.get("next") ?? "/api/youtube/auth"
 
   if (code) {
     const supabase = await createClient()

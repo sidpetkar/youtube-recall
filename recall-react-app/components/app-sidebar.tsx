@@ -22,7 +22,7 @@ import { useRouter } from "next/navigation"
 const menuItems = [
   {
     title: "Home",
-    url: "/",
+    url: "/app",
     icon: Home,
   },
   {
@@ -72,24 +72,40 @@ export function AppSidebar({ selectedFolderId, onSelectFolder }: AppSidebarProps
           <SidebarGroupLabel>Navigation</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {menuItems.map((item) => (
-                <SidebarMenuItem key={item.title}>
-                  <SidebarMenuButton asChild>
-                    <a href={item.url}>
-                      <item.icon />
-                      <span>{item.title}</span>
-                    </a>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
+              <SidebarMenuItem>
+                <SidebarMenuButton asChild>
+                  <a href={menuItems[0].url}>
+                    {React.createElement(menuItems[0].icon, {})}
+                    <span>{menuItems[0].title}</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-        {/* Always show folder list */}
         <FolderList
           selectedFolderId={selectedFolderId}
           onSelectFolder={onSelectFolder}
         />
+        <SidebarGroup>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {menuItems.slice(1).map((item) => {
+                const Icon = item.icon
+                return (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild>
+                      <a href={item.url}>
+                        <Icon />
+                        <span>{item.title}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
       <SidebarFooter>
         <div className="p-2">

@@ -215,9 +215,9 @@ export function FolderList({ selectedFolderId, onSelectFolder }: FolderListProps
       })
       setDeletingFolderId(null)
       
-      // If we're on the folder page, redirect to home
+      // If we're on the folder page, redirect to app home
       if (selectedFolderId === deletingFolderId) {
-        router.push("/")
+        router.push("/app")
       }
     } catch (error: any) {
       toast({

@@ -2,11 +2,18 @@ import { google } from "googleapis"
 
 const SCOPES = ["https://www.googleapis.com/auth/youtube.readonly"]
 
-export function getAuthUrl(): string {
+function getBaseUrl(): string {
+  return process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"
+}
+
+export function getAuthUrl(baseUrl?: string): string {
+  const redirectUri = baseUrl
+    ? `${baseUrl.replace(/\/$/, "")}/api/youtube/callback`
+    : `${getBaseUrl()}/api/youtube/callback`
   const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/youtube/callback`
+    redirectUri
   )
 
   return oauth2Client.generateAuthUrl({
@@ -16,11 +23,14 @@ export function getAuthUrl(): string {
   })
 }
 
-export async function getTokensFromCode(code: string) {
+export async function getTokensFromCode(code: string, baseUrl?: string) {
+  const redirectUri = baseUrl
+    ? `${baseUrl.replace(/\/$/, "")}/api/youtube/callback`
+    : `${getBaseUrl()}/api/youtube/callback`
   const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/youtube/callback`
+    redirectUri
   )
 
   const { tokens } = await oauth2Client.getToken(code)
@@ -31,7 +41,7 @@ export function getAuthenticatedClient(accessToken: string, refreshToken?: strin
   const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
-    `${process.env.NEXTAUTH_URL || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000"}/api/youtube/callback`
+    `${getBaseUrl()}/api/youtube/callback`
   )
 
   oauth2Client.setCredentials({
