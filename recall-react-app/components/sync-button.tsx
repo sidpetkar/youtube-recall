@@ -6,12 +6,15 @@ import { RefreshCw } from "lucide-react"
 import { useSyncVideos } from "@/hooks/use-videos"
 import { useToast } from "@/components/ui/use-toast"
 import { createClient } from "@/lib/supabase/client"
+import { useQueryClient } from "@tanstack/react-query"
 
 export function SyncButton() {
   const [youtubeConnected, setYoutubeConnected] = React.useState(false)
   const syncMutation = useSyncVideos()
   const { toast } = useToast()
+  const queryClient = useQueryClient()
   const supabase = createClient()
+  const refetchTimeoutsRef = React.useRef<ReturnType<typeof setTimeout>[]>([])
 
   React.useEffect(() => {
     // Check if YouTube is connected
@@ -39,6 +42,13 @@ export function SyncButton() {
     return () => subscription.unsubscribe()
   }, [supabase])
 
+  React.useEffect(() => {
+    return () => {
+      refetchTimeoutsRef.current.forEach(clearTimeout)
+      refetchTimeoutsRef.current = []
+    }
+  }, [])
+
   const handleSync = async () => {
     if (!youtubeConnected) {
       toast({
@@ -53,20 +63,38 @@ export function SyncButton() {
       const result = await syncMutation.mutateAsync()
 
       if (result.success) {
-        const fromYt = result.totalFromYouTube ?? result.totalVideos
-        const existing = result.existingCount ?? 0
-        const newCount = result.newVideosCount
-        let description: string
-        if (fromYt === 0) {
-          description =
-            "No videos returned from YouTube. Make sure you've liked videos and that you connected YouTube with the same Google account you use on YouTube."
+        const isStarted = "startedAt" in result && result.startedAt
+        if (isStarted && result.message) {
+          toast({
+            title: "Sync started",
+            description: result.message,
+          })
+          const refetch = () => {
+            queryClient.invalidateQueries({ queryKey: ["videos"] })
+            queryClient.invalidateQueries({ queryKey: ["folders"] })
+          }
+          refetch()
+          refetchTimeoutsRef.current.forEach(clearTimeout)
+          refetchTimeoutsRef.current = [
+            window.setTimeout(refetch, 20_000),
+            window.setTimeout(refetch, 45_000),
+          ]
         } else {
-          description = `Fetched ${fromYt} from YouTube. ${existing} already in library. ${newCount} new added.`
+          const fromYt = result.totalFromYouTube ?? result.totalVideos
+          const existing = result.existingCount ?? 0
+          const newCount = result.newVideosCount
+          let description: string
+          if (fromYt === 0) {
+            description =
+              "No videos returned from YouTube. Make sure you've liked videos and that you connected YouTube with the same Google account you use on YouTube."
+          } else {
+            description = `Fetched ${fromYt} from YouTube. ${existing} already in library. ${newCount} new added.`
+          }
+          toast({
+            title: "Sync complete",
+            description,
+          })
         }
-        toast({
-          title: "Sync complete",
-          description,
-        })
       } else {
         const desc = result.youtubeError
           ? `YouTube: ${result.youtubeError} Try reconnecting YouTube in Settings (same Google account you use to like videos).`

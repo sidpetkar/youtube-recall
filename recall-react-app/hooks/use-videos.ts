@@ -6,13 +6,15 @@ import type { VideoWithTags, SyncResult } from "@/lib/types/database"
 /**
  * Fetch videos with optional filters and pagination.
  * limit/offset: 50 per page; hasMore indicates if "Load more" can fetch more.
+ * refetchIntervalMs: when set, refetch this query every N ms (e.g. 60000 for carousel to update every minute).
  */
 export function useVideos(
   folderId?: string,
   search?: string,
   tagIds?: string[],
   limit: number = 50,
-  offset: number = 0
+  offset: number = 0,
+  refetchIntervalMs?: number
 ) {
   return useQuery<{ videos: VideoWithTags[]; hasMore: boolean }>({
     queryKey: ["videos", folderId, search, tagIds?.join(","), limit, offset],
@@ -32,6 +34,7 @@ export function useVideos(
       }
       return response.json()
     },
+    refetchInterval: refetchIntervalMs ?? false,
   })
 }
 

@@ -106,6 +106,14 @@ export async function getLikedVideos(
       pageToken = playlistResponse.data.nextPageToken ?? undefined
     } while (pageToken && videoIds.length < maxResults)
 
+    // Ensure every video has a likedAt from playlist order (index 0 = most recent) so DB order matches YouTube
+    const nowMs = Date.now()
+    videoIds.forEach((id, idx) => {
+      if (!videoIdToLikedAt.has(id)) {
+        videoIdToLikedAt.set(id, new Date(nowMs - idx * 1000).toISOString())
+      }
+    })
+
     if (videoIds.length === 0) {
       console.info("[YouTube] getLikedVideos: playlist LL returned 0 items (empty or no access)")
       return []

@@ -54,14 +54,14 @@ export class VideoService {
         }
       }
 
-      // Fetch liked videos from YouTube API (callback saves refreshed tokens to profile)
-      // Sync as much as possible (up to 250) so latest changes are reflected
+      // Fetch only the 250 most recent from YouTube: carousel shows 10, liked page shows 50/250 then load more
+      const SYNC_MAX_LIKED_VIDEOS = 250
       let youtubeVideos: Awaited<ReturnType<typeof getLikedVideos>>
       try {
         youtubeVideos = await getLikedVideos(
           profile.youtube_access_token,
           profile.youtube_refresh_token || undefined,
-          250,
+          SYNC_MAX_LIKED_VIDEOS,
           onTokensRefreshed
         )
       } catch (ytError: any) {
@@ -92,33 +92,20 @@ export class VideoService {
         }
       }
 
-      // Get existing video IDs to avoid duplicates
+      // Get existing video IDs so we can update their liked_at (order) and only insert truly new ones
       const youtubeIds = youtubeVideos.map((v) => v.videoId)
       const existingIds = await this.getExistingYouTubeIds(userId, youtubeIds)
       const existingCount = existingIds.length
 
-      // Filter out videos that already exist
+      // Update liked_at for existing videos so DB order matches YouTube (carousel = 10 most recent)
+      await this.updateLikedAtFromYouTube(userId, youtubeVideos)
+
       const newVideos = youtubeVideos.filter((v) => !existingIds.includes(v.videoId))
-
-      if (newVideos.length === 0) {
-        // Update last sync time even if no new videos
-        await supabase
-          .from("profiles")
-          .update({ last_sync_at: new Date().toISOString() })
-          .eq("id", userId)
-
-        return {
-          success: true,
-          newVideosCount: 0,
-          totalVideos: youtubeVideos.length,
-          totalFromYouTube: totalFromYouTube,
-          existingCount,
-          syncedAt: new Date().toISOString(),
-        }
+      let insertedCount = 0
+      if (newVideos.length > 0) {
+        const insertedVideos = await this.insertVideos(userId, newVideos, null)
+        insertedCount = insertedVideos.length
       }
-
-      // Insert new liked videos without assigning to any folder (liked-only: appear on Liked page and carousel only)
-      const insertedVideos = await this.insertVideos(userId, newVideos, null)
 
       // Update last sync time
       await supabase
@@ -128,7 +115,7 @@ export class VideoService {
 
       return {
         success: true,
-        newVideosCount: insertedVideos.length,
+        newVideosCount: insertedCount,
         totalVideos: youtubeVideos.length,
         totalFromYouTube: totalFromYouTube,
         existingCount,
@@ -146,30 +133,69 @@ export class VideoService {
     }
   }
 
+  /** Chunk size for DB queries (Supabase/PostgREST can fail with very large .in() lists) */
+  private static readonly EXISTING_IDS_CHUNK_SIZE = 300
+
   /**
-   * Get existing YouTube IDs for a user
+   * Update liked_at for existing videos so DB order matches YouTube (carousel = 10 most recent).
+   * Does not touch folder_id or other columns.
    */
-  static async getExistingYouTubeIds(userId: string, youtubeIds: string[]): Promise<string[]> {
+  static async updateLikedAtFromYouTube(
+    userId: string,
+    youtubeVideos: { videoId: string; likedAt?: string }[]
+  ): Promise<void> {
     const supabase = await createClient()
-
-    const { data, error } = await supabase
-      .from("videos")
-      .select("youtube_id")
-      .eq("user_id", userId)
-      .in("youtube_id", youtubeIds)
-
-    if (error) {
-      console.error("Error fetching existing video IDs:", error)
-      return []
+    const nowIso = new Date().toISOString()
+    const BATCH = 50
+    for (let i = 0; i < youtubeVideos.length; i += BATCH) {
+      const batch = youtubeVideos.slice(i, i + BATCH)
+      await Promise.all(
+        batch.map((v) =>
+          supabase
+            .from("videos")
+            .update({
+              liked_at: v.likedAt ? new Date(v.likedAt).toISOString() : nowIso,
+            })
+            .eq("user_id", userId)
+            .eq("youtube_id", v.videoId)
+        )
+      )
     }
-
-    return data.map((v) => v.youtube_id)
   }
 
   /**
+   * Get existing YouTube IDs for a user.
+   * Batched so we don't exceed URL/query limits when user has 1000s of videos.
+   */
+  static async getExistingYouTubeIds(userId: string, youtubeIds: string[]): Promise<string[]> {
+    const supabase = await createClient()
+    const existing: string[] = []
+
+    for (let i = 0; i < youtubeIds.length; i += VideoService.EXISTING_IDS_CHUNK_SIZE) {
+      const chunk = youtubeIds.slice(i, i + VideoService.EXISTING_IDS_CHUNK_SIZE)
+      const { data, error } = await supabase
+        .from("videos")
+        .select("youtube_id")
+        .eq("user_id", userId)
+        .in("youtube_id", chunk)
+
+      if (error) {
+        console.error("Error fetching existing video IDs (chunk):", error.message || error)
+        continue
+      }
+      existing.push(...(data?.map((v) => v.youtube_id) ?? []))
+    }
+
+    return existing
+  }
+
+  /** Insert batch size to avoid huge payloads and timeouts */
+  private static readonly INSERT_BATCH_SIZE = 100
+
+  /**
    * Insert new videos with auto-tagging.
+   * Uses upsert with ignoreDuplicates so we never fail on duplicate key (e.g. if existing-ID check was partial).
    * folderId = null: liked-only (Liked page + carousel, not in any folder).
-   * folderId = string: video is in that folder (and also on Liked page + carousel).
    */
   static async insertVideos(
     userId: string,
@@ -177,39 +203,46 @@ export class VideoService {
     folderId: string | null
   ): Promise<Video[]> {
     const supabase = await createClient()
-
-    // Prepare video inserts - use likedAt (when user liked) or fallback to now so new syncs appear in carousel
     const nowIso = new Date().toISOString()
-    const videoInserts: VideoInsert[] = youtubeVideos.map((ytVideo) => ({
-      user_id: userId,
-      folder_id: folderId,
-      youtube_id: ytVideo.videoId,
-      title: ytVideo.title,
-      channel_name: ytVideo.channelName,
-      channel_thumbnail: ytVideo.channelThumbnail || null,
-      thumbnail_url: ytVideo.thumbnail,
-      duration: ytVideo.duration || null,
-      notes: null,
-      liked_at: ytVideo.likedAt ? new Date(ytVideo.likedAt).toISOString() : nowIso,
-    }))
+    const allInserted: Video[] = []
 
-    // Insert videos
-    const { data: insertedVideos, error: insertError } = await supabase
-      .from("videos")
-      .insert(videoInserts)
-      .select()
+    for (let i = 0; i < youtubeVideos.length; i += VideoService.INSERT_BATCH_SIZE) {
+      const batch = youtubeVideos.slice(i, i + VideoService.INSERT_BATCH_SIZE)
+      const videoInserts: VideoInsert[] = batch.map((ytVideo) => ({
+        user_id: userId,
+        folder_id: folderId,
+        youtube_id: ytVideo.videoId,
+        title: ytVideo.title,
+        channel_name: ytVideo.channelName,
+        channel_thumbnail: ytVideo.channelThumbnail || null,
+        thumbnail_url: ytVideo.thumbnail,
+        duration: ytVideo.duration || null,
+        notes: null,
+        liked_at: ytVideo.likedAt ? new Date(ytVideo.likedAt).toISOString() : nowIso,
+      }))
 
-    if (insertError) {
-      console.error("Error inserting videos:", insertError)
-      throw new Error("Failed to insert videos")
+      const { data: insertedVideos, error: insertError } = await supabase
+        .from("videos")
+        .upsert(videoInserts, {
+          onConflict: "user_id,youtube_id",
+          ignoreDuplicates: true,
+        })
+        .select()
+
+      if (insertError) {
+        console.error("Error inserting videos (batch):", insertError)
+        throw new Error("Failed to insert videos")
+      }
+
+      const inserted = insertedVideos ?? []
+      allInserted.push(...inserted)
+
+      for (const video of inserted) {
+        await this.autoTagVideo(video.id, userId, video.title)
+      }
     }
 
-    // Auto-tag each video
-    for (const video of insertedVideos) {
-      await this.autoTagVideo(video.id, userId, video.title)
-    }
-
-    return insertedVideos
+    return allInserted
   }
 
   /**

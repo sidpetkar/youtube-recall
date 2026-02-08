@@ -191,10 +191,11 @@ const Sidebar = React.forwardRef<
       return (
         <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
           <SheetContent
+            side="left"
             data-sidebar={variant}
             data-mobile={isMobile}
             data-state={openMobile ? "expanded" : "collapsed"}
-            className="w-[var(--sidebar-width-mobile)] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
+            className="w-[var(--sidebar-width-mobile)] bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden duration-300 ease-out"
             style={
               {
                 "--sidebar-width": SIDEBAR_WIDTH_MOBILE,

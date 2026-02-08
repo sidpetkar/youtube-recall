@@ -1,6 +1,7 @@
 "use client"
 
 import * as React from "react"
+import { useQueryClient } from "@tanstack/react-query"
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar"
 import { AppSidebar } from "@/components/app-sidebar"
 import { AppHeader } from "@/components/app-header"
@@ -17,8 +18,17 @@ export default function AppHome() {
   const [selectedFolderId, setSelectedFolderId] = React.useState<string | undefined>()
   const supabase = createClient()
   const router = useRouter()
+  const queryClient = useQueryClient()
 
-  const { data } = useVideos(undefined, undefined)
+  // Fetch latest 250 liked videos (no folder filter) so carousel shows all recent likes; refresh every minute
+  const { data, isFetching } = useVideos(undefined, undefined, undefined, 250, 0, 60_000)
+
+  // Refetch videos on every load/refresh so carousel shows most recent data
+  React.useEffect(() => {
+    if (user) {
+      queryClient.invalidateQueries({ queryKey: ["videos"] })
+    }
+  }, [user, queryClient])
 
   React.useEffect(() => {
     const getUser = async () => {
@@ -78,7 +88,7 @@ export default function AppHome() {
         <main className="flex flex-1 flex-col p-4 md:p-6 lg:p-8">
           <MainSheet className="gap-8">
             <AutoSync />
-            <RecentlyLikedCarousel videos={recentVideos} isLoading={false} />
+            <RecentlyLikedCarousel videos={recentVideos} isLoading={isFetching} />
             <FoldersSection />
           </MainSheet>
         </main>

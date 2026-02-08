@@ -23,8 +23,8 @@ export async function GET(request: NextRequest) {
     const folderId = searchParams.get("folderId")
     const search = searchParams.get("search")
     const tagIds = searchParams.get("tagIds")?.split(",").filter(Boolean) || []
-    // Pagination: 50 per page for both Liked and folder views (keeps mobile light; use Load more for more)
-    const limit = Math.min(parseInt(searchParams.get("limit") || "50", 10) || 50, 100)
+    // Pagination: default 50; allow up to 250 for home "latest liked" so carousel has fresh data
+    const limit = Math.min(parseInt(searchParams.get("limit") || "50", 10) || 50, 250)
     const offset = Math.max(0, parseInt(searchParams.get("offset") || "0", 10))
 
     // Build query
@@ -38,7 +38,7 @@ export async function GET(request: NextRequest) {
       `
       )
       .eq("user_id", user.id)
-      .order("liked_at", { ascending: false })
+      .order("liked_at", { ascending: false, nullsFirst: false })
       .order("created_at", { ascending: false })
       .range(offset, offset + limit - 1)
 
@@ -97,13 +97,18 @@ export async function GET(request: NextRequest) {
       throw error
     }
 
-    // Transform data to include tags array
-    const videos = data.map((video: any) => ({
-      ...video,
-      tags: video.tags?.map((vt: any) => vt.tag).filter(Boolean) || [],
-    }))
-
-    const hasMore = videos.length === limit
+    // Transform and dedupe: join on video_tags can duplicate rows per video; keep first occurrence to preserve DB order (liked_at desc, nulls last)
+    const seen = new Set<string>()
+    const videos: any[] = []
+    for (const row of data || []) {
+      if (seen.has(row.id)) continue
+      seen.add(row.id)
+      videos.push({
+        ...row,
+        tags: row.tags?.map((vt: any) => vt.tag).filter(Boolean) || [],
+      })
+    }
+    const hasMore = (data?.length ?? 0) === limit
     return NextResponse.json({ videos, hasMore }, { status: 200 })
   } catch (error: any) {
     console.error("Error fetching videos:", error)

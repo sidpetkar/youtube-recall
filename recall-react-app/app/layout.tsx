@@ -40,6 +40,10 @@ export default function RootLayout({
         <meta name="google-site-verification" content="-dWScSuzsChBd8Wu6zL9Hnq3yfzKzW_iDVpPZrX5QRs" />
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#0a0a0a" />
+        {/* PWA / Add to Home Screen (iOS) */}
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <link rel="apple-touch-icon" href="/recal-icon-128.png" />
       </head>
       <body className={`${bricolageGrotesque.className} overflow-x-hidden`}>
         <ThemeProvider
