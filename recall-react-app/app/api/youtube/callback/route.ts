@@ -55,7 +55,8 @@ export async function GET(request: Request) {
     }
 
     // Also store in cookies for backward compatibility with existing code
-    const response = NextResponse.redirect(`${redirectBase}?youtube_connected=true`)
+    // After a successful YouTube connect, send the user directly into the app
+    const response = NextResponse.redirect(`${redirectBase}/app?youtube_connected=true`)
 
     response.cookies.set("youtube_access_token", tokens.access_token, {
       httpOnly: true,
